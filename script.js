@@ -92,6 +92,39 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(style);
 });
 
+// ===================== GitHub Release Version Auto-Fetcher =====================
+async function fetchLatestVersion() {
+    const versionElements = document.querySelectorAll('[data-repo]');
+    if (versionElements.length === 0) return;
+
+    // Use the first element's repo attribute
+    const repo = versionElements[0].getAttribute('data-repo');
+
+    try {
+        const response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
+        if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+        const data = await response.json();
+        const tagName = data.tag_name; // e.g. "v0.1.1"
+
+        // Update all version-tag elements with the matching repo
+        document.querySelectorAll(`.version-tag[data-repo="${repo}"]`).forEach(el => {
+            el.textContent = tagName;
+        });
+
+        // Also update the release banner version
+        const releaseVersionEl = document.querySelector('.release-version');
+        if (releaseVersionEl) {
+            releaseVersionEl.textContent = tagName;
+        }
+    } catch (err) {
+        console.warn('Failed to fetch latest release version:', err);
+        // Keep the initial hardcoded version as fallback
+    }
+}
+
+// Fetch latest version on page load
+document.addEventListener('DOMContentLoaded', fetchLatestVersion);
+
 // ===================== Parallax effect on hero background =====================
 const heroBg = document.querySelector('.hero-bg');
 
