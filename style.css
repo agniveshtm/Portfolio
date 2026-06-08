@@ -665,6 +665,14 @@ img { max-width: 100%; }
     white-space: pre;
 }
 
+.tui-screenshot {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    display: block;
+    object-fit: contain;
+}
+
 /* Projects Grid */
 .projects-grid {
     display: grid;
