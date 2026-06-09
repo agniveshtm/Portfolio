@@ -23,59 +23,13 @@
                 <li><a href="#skills" class="nav-link">Skills</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
-            <div class="nav-actions">
-                <button class="token-btn" id="tokenBtn" aria-label="GitHub Token Settings" title="GitHub Token Settings">
-                    <i class="fas fa-key"></i>
-                    <span class="token-status-dot" id="tokenStatusDot"></span>
-                </button>
-                <div class="nav-toggle" id="navToggle">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </div>
+            <div class="nav-toggle" id="navToggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
             </div>
         </div>
     </nav>
-
-    <!-- Token Settings Modal -->
-    <div class="modal-overlay" id="tokenModal">
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose">&times;</button>
-            <div class="modal-header">
-                <i class="fas fa-key"></i>
-                <h3>GitHub Token Settings</h3>
-            </div>
-            <p class="modal-desc">
-                Enter your GitHub Personal Access Token (PAT) to authenticate API requests.
-                The token is encrypted and stored locally in your browser.
-            </p>
-            <div class="token-input-group">
-                <label for="patInput">Personal Access Token</label>
-                <div class="token-input-wrapper">
-                    <input type="password" id="patInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="token-input" />
-                    <button class="token-visibility-toggle" id="tokenVisibilityToggle" type="button" aria-label="Toggle token visibility">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-                <div class="token-hint">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Create a token with <code>repo</code> and <code>public_repo</code> scopes at <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings</a></span>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-primary" id="tokenSaveBtn">
-                    <i class="fas fa-save"></i> Save Token
-                </button>
-                <button class="btn btn-outline" id="tokenClearBtn">
-                    <i class="fas fa-trash"></i> Clear Token
-                </button>
-            </div>
-            <div class="token-status" id="tokenStatus">
-                <i class="fas fa-check-circle"></i>
-                <span id="tokenStatusText"></span>
-            </div>
-        </div>
-    </div>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
