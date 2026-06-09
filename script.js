@@ -1,73 +1,11 @@
-// ===================== Crypto Helpers (AES-GCM via Web Crypto API) =====================
-const CRYPTO_KEY_NAME = 'portfolio-encryption-key';
-const CRYPTO_STORAGE_KEY = 'github-pat-encrypted';
-
-async function getOrCreateCryptoKey() {
-    const keyBase64 = localStorage.getItem(CRYPTO_KEY_NAME);
-    if (keyBase64) {
-        const keyBytes = base64ToBytes(keyBase64);
-        return await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-    }
-    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
-    const rawKey = await crypto.subtle.exportKey('raw', key);
-    localStorage.setItem(CRYPTO_KEY_NAME, bytesToBase64(new Uint8Array(rawKey)));
-    return key;
+// ===================== Token from URL (?pat=) =====================
+function getTokenFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('pat') || null;
 }
 
-async function encryptToken(plaintext) {
-    const key = await getOrCreateCryptoKey();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encoded = new TextEncoder().encode(plaintext);
-    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
-    const combined = new Uint8Array(iv.length + ciphertext.byteLength);
-    combined.set(iv, 0);
-    combined.set(new Uint8Array(ciphertext), iv.length);
-    return bytesToBase64(combined);
-}
-
-async function decryptToken(ciphertextB64) {
-    try {
-        const key = await getOrCreateCryptoKey();
-        const combined = base64ToBytes(ciphertextB64);
-        const iv = combined.slice(0, 12);
-        const ciphertext = combined.slice(12);
-        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
-        return new TextDecoder().decode(decrypted);
-    } catch {
-        return null;
-    }
-}
-
-function bytesToBase64(bytes) {
-    let binary = '';
-    bytes.forEach(b => binary += String.fromCharCode(b));
-    return btoa(binary);
-}
-
-function base64ToBytes(base64) {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return bytes;
-}
-
-async function getStoredToken() {
-    const encrypted = localStorage.getItem(CRYPTO_STORAGE_KEY);
-    if (!encrypted) return null;
-    return await decryptToken(encrypted);
-}
-
-async function setStoredToken(token) {
-    if (!token || token.trim() === '') {
-        localStorage.removeItem(CRYPTO_STORAGE_KEY);
-        return;
-    }
-    const encrypted = await encryptToken(token.trim());
-    localStorage.setItem(CRYPTO_STORAGE_KEY, encrypted);
-}
-
-async function clearStoredToken() {
-    localStorage.removeItem(CRYPTO_STORAGE_KEY);
+function getStoredToken() {
+    return getTokenFromURL();
 }
 
 // ===================== IndexedDB GraphQL Cache =====================
@@ -99,11 +37,9 @@ async function getCachedResponse(queryKey) {
         request.onsuccess = () => {
             const entry = request.result;
             if (entry && entry.data) {
-                // Cache TTL: 5 minutes
                 if (Date.now() - entry.timestamp < 5 * 60 * 1000) {
                     resolve(entry.data);
                 } else {
-                    // Expired: remove it
                     const writeTx = db.transaction(STORE_NAME, 'readwrite');
                     writeTx.objectStore(STORE_NAME).delete(queryKey);
                     resolve(null);
@@ -141,10 +77,13 @@ async function clearGraphQLCache() {
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
 async function graphqlRequest(query, variables = {}) {
-    const token = await getStoredToken();
+    const token = getStoredToken();
     const headers = { 'Content-Type': 'application/json' };
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        console.log('[GitHub] Using authenticated request (Bearer token from ?pat=)');
+    } else {
+        console.log('[GitHub] Using unauthenticated request');
     }
 
     const response = await fetch(GITHUB_GRAPHQL_URL, {
@@ -153,6 +92,8 @@ async function graphqlRequest(query, variables = {}) {
         body: JSON.stringify({ query, variables })
     });
 
+    console.log('[GitHub] Response status:', response.status);
+
     if (!response.ok) {
         const errText = await response.text();
         throw new Error(`GitHub GraphQL API error ${response.status}: ${errText}`);
@@ -160,6 +101,7 @@ async function graphqlRequest(query, variables = {}) {
 
     const result = await response.json();
     if (result.errors) {
+        console.warn('[GitHub] GraphQL errors in response:', result.errors);
         throw new Error(`GraphQL error: ${result.errors.map(e => e.message).join(', ')}`);
     }
     return result.data;
@@ -168,15 +110,20 @@ async function graphqlRequest(query, variables = {}) {
 async function fetchWithCache(queryKey, query, variables = {}, forceRefresh = false) {
     if (!forceRefresh) {
         const cached = await getCachedResponse(queryKey);
-        if (cached) return cached;
+        if (cached) {
+            console.log('[Cache] Serving cached response for:', queryKey);
+            return cached;
+        }
     }
 
+    console.log('[GitHub] Fetching:', queryKey);
     const data = await graphqlRequest(query, variables);
     await setCachedResponse(queryKey, data);
     return data;
 }
 
 // ===================== GraphQL Queries =====================
+// Note: latestRelease requires auth for some repos; without auth it returns null silently
 const LATEST_RELEASE_QUERY = `
     query($owner: String!, $repo: String!) {
         repository(owner: $owner, name: $repo) {
@@ -189,33 +136,17 @@ const LATEST_RELEASE_QUERY = `
     }
 `;
 
-const USER_STATS_QUERY = `
+// Split user stats into multiple smaller queries to avoid partial failures
+const USER_REPOS_QUERY = `
     query($login: String!) {
         user(login: $login) {
             repositories(privacy: PUBLIC, first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
                 totalCount
                 nodes {
-                    name
                     stargazerCount
-                    updatedAt
-                    description
-                    primaryLanguage { name }
                 }
             }
             followers { totalCount }
-            repositoriesContributedTo(first: 1, contributionTypes: [COMMIT, PULL_REQUEST, ISSUE]) {
-                totalCount
-            }
-        }
-    }
-`;
-
-const REPO_LANGUAGES_QUERY = `
-    query($owner: String!, $repo: String!) {
-        repository(owner: $owner, name: $repo) {
-            languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-                nodes { name }
-            }
         }
     }
 `;
@@ -228,6 +159,7 @@ async function fetchLatestRelease() {
 
     try {
         const data = await fetchWithCache(queryKey, LATEST_RELEASE_QUERY, { owner, repo });
+        console.log('[Fetch] Release data:', data);
         if (data && data.repository && data.repository.latestRelease) {
             const tagName = data.repository.latestRelease.tagName;
             document.querySelectorAll('.version-tag[data-repo="agniveshtm/todo-tui"]').forEach(el => {
@@ -235,16 +167,19 @@ async function fetchLatestRelease() {
             });
             const releaseVersionEl = document.querySelector('.release-version');
             if (releaseVersionEl) releaseVersionEl.textContent = tagName;
+        } else {
+            console.log('[Fetch] No latest release found (may need auth token)');
         }
     } catch (err) {
-        console.warn('Failed to fetch latest release (GraphQL):', err);
+        console.warn('[Fetch] Failed to fetch latest release (GraphQL):', err.message);
     }
 }
 
 async function fetchGitHubStats() {
     const queryKey = 'userStats_agniveshtm';
     try {
-        const data = await fetchWithCache(queryKey, USER_STATS_QUERY, { login: 'agniveshtm' });
+        const data = await fetchWithCache(queryKey, USER_REPOS_QUERY, { login: 'agniveshtm' });
+        console.log('[Fetch] User stats data:', data);
         if (data && data.user) {
             const user = data.user;
             const repoCount = user.repositories.totalCount;
@@ -263,7 +198,7 @@ async function fetchGitHubStats() {
             }
         }
     } catch (err) {
-        console.warn('Failed to fetch GitHub stats (GraphQL):', err);
+        console.warn('[Fetch] Failed to fetch GitHub stats (GraphQL):', err.message);
     }
 }
 
@@ -347,7 +282,6 @@ animatedElements.forEach(el => {
     observer.observe(el);
 });
 
-// Add visible class styles dynamically
 document.addEventListener('DOMContentLoaded', () => {
     const style = document.createElement('style');
     style.textContent = `
@@ -370,7 +304,7 @@ window.addEventListener('mousemove', (e) => {
     }
 });
 
-// ===================== Token Modal Logic =====================
+// ===================== Token Modal Logic (URL-based ?pat=) =====================
 const tokenModal = document.getElementById('tokenModal');
 const tokenBtn = document.getElementById('tokenBtn');
 const modalClose = document.getElementById('modalClose');
@@ -384,7 +318,8 @@ const tokenStatusDot = document.getElementById('tokenStatusDot');
 
 function openModal() {
     tokenModal.classList.add('active');
-    populateInputFromStorage();
+    const currentToken = getStoredToken();
+    patInput.value = currentToken || '';
 }
 
 function closeModal() {
@@ -397,21 +332,16 @@ function toggleTokenVisibility() {
     tokenVisibilityToggle.innerHTML = isPassword ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
 }
 
-async function populateInputFromStorage() {
-    const token = await getStoredToken();
-    patInput.value = token || '';
-}
-
-async function updateTokenStatusDot() {
-    const token = await getStoredToken();
+function updateTokenStatusDot() {
+    const token = getStoredToken();
     if (token) {
         tokenStatusDot.style.background = '#50fa7b';
         tokenStatusDot.style.boxShadow = '0 0 6px #50fa7b';
-        tokenBtn.title = 'Token configured';
+        tokenBtn.title = 'Token configured via URL (?pat=...)';
     } else {
         tokenStatusDot.style.background = '#ff5f57';
         tokenStatusDot.style.boxShadow = '0 0 6px #ff5f57';
-        tokenBtn.title = 'No token configured';
+        tokenBtn.title = 'No token. Add ?pat=YOUR_TOKEN to URL';
     }
 }
 
@@ -430,7 +360,7 @@ function showTokenStatus(message, isError = false) {
     }
     setTimeout(() => {
         tokenStatus.style.display = 'none';
-    }, 4000);
+    }, 5000);
 }
 
 async function validateAndSaveToken() {
@@ -440,59 +370,62 @@ async function validateAndSaveToken() {
         return;
     }
 
-    // Basic format check for GitHub PAT
-    if (!token.startsWith('ghp_') && !token.startsWith('github_pat_') && !token.startsWith('gho_') && !token.startsWith('ghu_') && !token.startsWith('ghs_') && !token.startsWith('ghr_')) {
-        showTokenStatus('Token format may be invalid (expected ghp_... or github_pat_...). Saving anyway.', true);
-    }
-
     try {
         // Test the token with a simple GraphQL query
         const testQuery = `query { viewer { login } }`;
-        const testHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
         const testResp = await fetch(GITHUB_GRAPHQL_URL, {
             method: 'POST',
-            headers: testHeaders,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ query: testQuery })
         });
 
         if (!testResp.ok) {
             const errText = await testResp.text();
-            showTokenStatus(`Token validation failed (HTTP ${testResp.status}). Not saved.`, true);
+            showTokenStatus(`Token validation failed (HTTP ${testResp.status})`, true);
+            console.error('[Token] Validation error:', errText);
             return;
         }
 
         const testResult = await testResp.json();
         if (testResult.errors) {
-            showTokenStatus(`Token invalid: ${testResult.errors[0].message}. Not saved.`, true);
+            showTokenStatus(`Token invalid: ${testResult.errors[0].message}`, true);
             return;
         }
 
-        // Token is valid — save it encrypted
-        await setStoredToken(token);
-        await updateTokenStatusDot();
-        // Invalidate cache so next fetch uses authenticated requests
-        await clearGraphQLCache();
-        showTokenStatus(`Token saved successfully! Authenticated as ${testResult.data.viewer.login}`);
+        // Token is valid — update URL with ?pat= via replaceState (no reload)
+        const url = new URL(window.location.href);
+        url.searchParams.set('pat', token);
+        window.history.replaceState({}, '', url.toString());
 
-        // Re-fetch data with authenticated requests
+        await clearGraphQLCache();
+        updateTokenStatusDot();
+        showTokenStatus(`Token saved! Authenticated as ${testResult.data.viewer.login}`);
+
+        // Re-fetch with auth
         fetchLatestRelease();
         fetchGitHubStats();
 
-        // Close modal after short delay
         setTimeout(closeModal, 1500);
     } catch (err) {
-        showTokenStatus(`Cannot reach GitHub: ${err.message}. Saving anyway.`, true);
-        await setStoredToken(token);
-        await updateTokenStatusDot();
+        showTokenStatus(`Error: ${err.message}`, true);
     }
 }
 
 async function clearToken() {
-    await clearStoredToken();
+    const url = new URL(window.location.href);
+    url.searchParams.delete('pat');
+    window.history.replaceState({}, '', url.toString());
+
     await clearGraphQLCache();
     patInput.value = '';
-    await updateTokenStatusDot();
-    showTokenStatus('Token cleared. Using unauthenticated requests.');
+    updateTokenStatusDot();
+    showTokenStatus('Token cleared from URL. Using unauthenticated requests.');
+
+    fetchLatestRelease();
+    fetchGitHubStats();
 }
 
 // Modal event listeners
@@ -506,10 +439,12 @@ tokenSaveBtn.addEventListener('click', validateAndSaveToken);
 tokenClearBtn.addEventListener('click', clearToken);
 
 // ===================== Init =====================
-document.addEventListener('DOMContentLoaded', async () => {
-    await updateTokenStatusDot();
-
-    // If token is configured, fetch with auth (will use cache otherwise)
+document.addEventListener('DOMContentLoaded', () => {
+    const token = getStoredToken();
+    console.log('[Init] Page loaded. Token from URL:', token ? '***present***' : 'none');
+    console.log('[Init] Current URL:', window.location.href);
+    console.log('[Init] Query string:', window.location.search);
+    updateTokenStatusDot();
     fetchLatestRelease();
     fetchGitHubStats();
 });
