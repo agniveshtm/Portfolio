@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agnivesh Manojkumar — CS Student, Vibe-Coder, ML & Web Developer. Building at the intersection of machine learning, web development, and design.">
+    <meta name="theme-color" content="#0a0a0f">
     <title>Agnivesh Manojkumar | Portfolio</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://api.github.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <a href="#home" class="skip-link">Skip to content</a>
+
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-container">
             <a href="#home" class="nav-logo"><agnivesh/></a>
             <ul class="nav-menu" id="navMenu">
@@ -23,7 +28,7 @@
                 <li><a href="#skills" class="nav-link">Skills</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
-            <div class="nav-toggle" id="navToggle">
+            <div class="nav-toggle" id="navToggle" aria-label="Toggle navigation" role="button" tabindex="0" aria-expanded="false">
                 <span class="bar"></span>
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -38,7 +43,7 @@
             <div class="hero-text">
                 <p class="hero-greeting">Hi there, I'm</p>
                 <h1 class="hero-name">Agnivesh Manojkumar</h1>
-                <h2 class="hero-title">CS Student · Vibe-Coder · ML & Web Developer</h2>
+                <h2 class="hero-title"><span class="typing-text" id="typingText"></span><span class="typing-cursor">|</span></h2>
                 <p class="hero-desc">
                     Building at the intersection of machine learning, web development, and design.
                     Currently deep in Django, Linux sysadmin, and generative AI.
@@ -190,75 +195,22 @@ print(me.build(<span class="string">"todo-tui"</span>))
             </div>
 
             <!-- Other Projects Grid -->
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-card-header">
-                        <i class="fas fa-leaf project-icon"></i>
-                        <div class="project-card-links">
-                            <a href="https://github.com/agniveshtm/Carbon_Scope" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                        </div>
-                    </div>
-                    <h3>Carbon_Scope</h3>
-                    <p class="project-type">Python · Data Analysis</p>
-                    <p>Carbon footprint analysis and environmental impact tracking tool built with Python. Leverages data science libraries to provide insights.</p>
-                    <div class="project-tags">
-                        <span>Python</span>
-                        <span>Data Analysis</span>
-                        <span>NumPy</span>
-                    </div>
+            <div class="repos-toolbar" id="reposToolbar">
+                <div class="repos-filters">
+                    <button class="filter-btn active" data-sort="stars"><i class="fas fa-star"></i> Top Stars</button>
+                    <button class="filter-btn" data-sort="updated"><i class="fas fa-clock"></i> Recently Updated</button>
+                    <button class="filter-btn" data-sort="name"><i class="fas fa-arrow-down-a-z"></i> A–Z</button>
                 </div>
-
-                <div class="project-card">
-                    <div class="project-card-header">
-                        <i class="fas fa-school project-icon"></i>
-                        <div class="project-card-links">
-                            <a href="https://github.com/agniveshtm/SCHOOLARTSPLANNER" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                        </div>
-                    </div>
-                    <h3>School Arts Planner</h3>
-                    <p class="project-type">Python · Management System</p>
-                    <p>A Python-based management system designed to organize and streamline school arts festivals. Register events, manage participants, track winners, and generate certificates.</p>
-                    <div class="project-tags">
-                        <span>Python</span>
-                        <span>Management</span>
-                        <span>CLI</span>
-                    </div>
+                <div class="repos-status" id="reposStatus">
+                    <span class="repos-count"></span>
+                    <span class="repos-updated"></span>
                 </div>
-
-                <div class="project-card">
-                    <div class="project-card-header">
-                        <i class="fas fa-chart-line project-icon"></i>
-                        <div class="project-card-links">
-                            <a href="https://github.com/agniveshtm/stock-analysis" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                        </div>
-                    </div>
-                    <h3>Stock Analysis</h3>
-                    <p class="project-type">Cython · Financial Analysis</p>
-                    <p>Stock market analysis tool leveraging Cython for performance-optimized financial data processing and analysis.</p>
-                    <div class="project-tags">
-                        <span>Cython</span>
-                        <span>Finance</span>
-                        <span>Analysis</span>
-                    </div>
-                </div>
-
-                <div class="project-card">
-                    <div class="project-card-header">
-                        <i class="fab fa-python project-icon django-icon"></i>
-                        <div class="project-card-links">
-                            <a href="https://github.com/agniveshtm/DJANGO" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                        </div>
-                    </div>
-                    <h3>Django Projects</h3>
-                    <p class="project-type">Django · Full-Stack Web</p>
-                    <p>Full-stack web applications built with Django — my go-to framework for production-grade web apps with clean architecture.</p>
-                    <div class="project-tags">
-                        <span>Django</span>
-                        <span>Python</span>
-                        <span>Full-Stack</span>
-                        <span>HTML</span>
-                    </div>
-                </div>
+            </div>
+            <div class="projects-grid" id="reposGrid">
+                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
+                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
+                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
+                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
             </div>
         </div>
     </section>
@@ -360,22 +312,22 @@ print(me.build(<span class="string">"todo-tui"</span>))
             <div class="github-stats">
                 <div class="stat-card">
                     <i class="fas fa-code-branch"></i>
-                    <span class="stat-number">9</span>
+                    <span class="stat-number" data-target="9">0</span>
                     <span class="stat-label">Public Repos</span>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-users"></i>
-                    <span class="stat-number">5</span>
+                    <span class="stat-number" data-target="5">0</span>
                     <span class="stat-label">Followers</span>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-star"></i>
-                    <span class="stat-number">3</span>
+                    <span class="stat-number" data-target="3">0</span>
                     <span class="stat-label">Stars Earned</span>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-calendar-alt"></i>
-                    <span class="stat-number">2024</span>
+                    <span class="stat-number" data-target="2024">2024</span>
                     <span class="stat-label">Coding Since</span>
                 </div>
             </div>
