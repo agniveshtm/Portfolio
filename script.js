@@ -35,6 +35,8 @@ function openDB() {
     });
 }
 
+const LOCAL_STORAGE_KEY = 'portfolio_repos_cache';
+
 async function getCachedResponse(queryKey, ttlMs = 5 * 60 * 1000) {
     const db = await openDB();
     return new Promise((resolve) => {
@@ -44,13 +46,12 @@ async function getCachedResponse(queryKey, ttlMs = 5 * 60 * 1000) {
         request.onsuccess = () => {
             const entry = request.result;
             if (entry && entry.data) {
-                if (Date.now() - entry.timestamp < ttlMs) {
-                    resolve({ data: entry.data, timestamp: entry.timestamp });
-                } else {
-                    const writeTx = db.transaction(STORE_NAME, 'readwrite');
-                    writeTx.objectStore(STORE_NAME).delete(queryKey);
-                    resolve(null);
-                }
+                const age = Date.now() - entry.timestamp;
+                resolve({
+                    data: entry.data,
+                    timestamp: entry.timestamp,
+                    fresh: age < ttlMs,
+                });
             } else {
                 resolve(null);
             }
@@ -59,8 +60,30 @@ async function getCachedResponse(queryKey, ttlMs = 5 * 60 * 1000) {
     });
 }
 
+function getCachedFromStorage() {
+    try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (!raw) return null;
+        const entry = JSON.parse(raw);
+        if (entry && entry.data && entry.timestamp) {
+            return { data: entry.data, timestamp: entry.timestamp, fresh: true };
+        }
+    } catch {}
+    return null;
+}
+
+function saveCacheToStorage(data) {
+    try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+            data,
+            timestamp: Date.now(),
+        }));
+    } catch {}
+}
+
 async function setCachedResponse(queryKey, data) {
     const db = await openDB();
+    saveCacheToStorage(data);
     return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
@@ -197,8 +220,8 @@ const REPO_OVERRIDES = {
 // ===================== RepoManager =====================
 const RepoManager = {
     cacheKey: 'allRepos_agniveshtm',
-    cacheTTL: 10 * 60 * 1000, // 10 minutes
-    refreshInterval: 10 * 60 * 1000,
+    cacheTTL: 24 * 60 * 60 * 1000, // 24 hours
+    refreshInterval: 12 * 60 * 60 * 1000,
     _timer: null,
     _repos: [],
     _sort: 'stars',
@@ -229,20 +252,21 @@ const RepoManager = {
             const cached = await getCachedResponse(this.cacheKey, this.cacheTTL);
             if (cached) {
                 this._repos = cached.data;
-                this.render();
-                this.fetchFresh();
-                return;
-            }
-
-            const stale = await getCachedResponse(this.cacheKey, Infinity);
-            if (stale) {
-                this._repos = stale.data;
-                this._lastFetched = stale.timestamp;
+                this._lastFetched = cached.timestamp;
                 this.render();
                 this.fetchFresh();
                 return;
             }
         } catch {}
+
+        const lsCache = getCachedFromStorage();
+        if (lsCache) {
+            this._repos = lsCache.data;
+            this._lastFetched = lsCache.timestamp;
+            this.render();
+            this.fetchFresh();
+            return;
+        }
 
         await this.fetchFresh();
     },
@@ -285,7 +309,15 @@ const RepoManager = {
                 if (this._repos.length > 0) {
                     this.renderRateLimitBanner(err);
                 } else {
-                    this.renderRateLimit(err);
+                    const lsCache = getCachedFromStorage();
+                    if (lsCache) {
+                        this._repos = lsCache.data;
+                        this._lastFetched = lsCache.timestamp;
+                        this.render();
+                        this.renderRateLimitBanner(err);
+                    } else {
+                        this.renderRateLimit(err);
+                    }
                 }
             } else if (this._repos.length === 0) {
                 this.renderError(err.message);
