@@ -15,10 +15,6 @@ function getStoredToken() {
     return getTokenFromURL() || localStorage.getItem(TOKEN_STORAGE_KEY);
 }
 
-function hasToken() {
-    return !!(getTokenFromURL() || localStorage.getItem(TOKEN_STORAGE_KEY));
-}
-
 // ===================== IndexedDB GraphQL Cache =====================
 const DB_NAME = 'PortfolioGraphQLCache';
 const DB_VERSION = 1;
@@ -109,7 +105,6 @@ async function graphqlRequest(query, variables = {}) {
         const err = new Error('RATE_LIMITED');
         err.resetIn = resetIn;
         err.rateInfo = rateInfo;
-        err.hasToken = hasToken();
         throw err;
     }
 
@@ -459,20 +454,11 @@ const RepoManager = {
 
     renderRateLimit(err) {
         if (!this.grid) return;
-        const hasPat = err.hasToken;
         this.grid.innerHTML = `
             <div class="repos-error rate-limited">
                 <i class="fas fa-clock"></i>
                 <p><strong>Rate limit reached</strong></p>
-                <p class="rate-limit-detail">
-                    ${hasPat
-                        ? `Your token's hourly limit is used up. Resets in ~${err.resetIn} min.`
-                        : `Unauthenticated requests are limited to 60/hour. Add a Personal Access Token for 5,000/hour.`}
-                </p>
-                ${!hasPat ? `<div class="token-input-group">
-                    <input type="password" id="patInput" placeholder="ghp_xxxxxxxxxxxx" spellcheck="false" autocomplete="off">
-                    <button onclick="RepoManager.submitToken()"><i class="fas fa-key"></i> Save & Retry</button>
-                </div>` : ''}
+                <p class="rate-limit-detail">Data refreshes in ~${err.resetIn} min. Cached results are shown below.</p>
                 <button class="retry-btn" onclick="RepoManager.fetchFresh()"><i class="fas fa-redo"></i> Retry</button>
             </div>`;
     },
@@ -480,56 +466,13 @@ const RepoManager = {
     renderRateLimitBanner(err) {
         const existing = document.querySelector('.rate-limit-banner');
         if (existing) return;
-        const hasPat = err.hasToken;
         const banner = document.createElement('div');
         banner.className = 'rate-limit-banner';
         banner.innerHTML = `
             <i class="fas fa-exclamation-circle"></i>
-            <span>Rate limited — ${hasPat ? `resets in ~${err.resetIn}m` : 'add a PAT for 5k req/hr'}</span>
-            ${!hasPat ? `<button onclick="RepoManager.showTokenPrompt()">Add Token</button>` : ''}
+            <span>Rate limited — resets in ~${err.resetIn}m</span>
             <button onclick="this.parentElement.remove()" class="banner-close">&times;</button>`;
         this.grid.parentElement.insertBefore(banner, this.grid);
-    },
-
-    submitToken() {
-        const input = document.getElementById('patInput');
-        if (!input || !input.value.trim()) return;
-        const pat = input.value.trim();
-        localStorage.setItem(TOKEN_STORAGE_KEY, pat);
-        this._rateLimitError = null;
-        this.fetchFresh();
-    },
-
-    showTokenPrompt() {
-        const modal = document.createElement('div');
-        modal.className = 'token-modal';
-        modal.innerHTML = `
-            <div class="token-modal-content">
-                <h3><i class="fab fa-github"></i> Add GitHub Token</h3>
-                <p>A Personal Access Token (no scopes needed) gives you <strong>5,000 requests/hour</strong> instead of 60.</p>
-                <ol>
-                    <li>Go to <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></li>
-                    <li>Click <strong>Generate new token (classic)</strong></li>
-                    <li>No scopes needed — just generate and copy</li>
-                </ol>
-                <div class="token-input-group">
-                    <input type="password" id="modalPatInput" placeholder="ghp_xxxxxxxxxxxx" spellcheck="false" autocomplete="off">
-                    <button onclick="RepoManager.saveModalToken()"><i class="fas fa-check"></i> Save</button>
-                </div>
-                <button class="modal-close" onclick="this.closest('.token-modal').remove()">Cancel</button>
-            </div>`;
-        document.body.appendChild(modal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-        modal.querySelector('input').focus();
-    },
-
-    saveModalToken() {
-        const input = document.getElementById('modalPatInput');
-        if (!input || !input.value.trim()) return;
-        localStorage.setItem(TOKEN_STORAGE_KEY, input.value.trim());
-        document.querySelector('.token-modal')?.remove();
-        this._rateLimitError = null;
-        this.fetchFresh();
     },
 
     startAutoRefresh() {
