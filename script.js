@@ -191,6 +191,62 @@ const USER_REPOS_QUERY = `
     }
 `;
 
+// ===================== REST API Fallback =====================
+const GITHUB_API_BASE = 'https://api.github.com';
+
+async function restFetch(url) {
+    const token = getStoredToken();
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const response = await fetch(url, { headers });
+    if (response.status === 403 || response.status === 429) {
+        const reset = parseInt(response.headers.get('x-ratelimit-reset') || '0', 10) * 1000;
+        const err = new Error('RATE_LIMITED');
+        err.resetIn = Math.max(0, Math.ceil((reset - Date.now()) / 60000));
+        throw err;
+    }
+    if (!response.ok) throw new Error(`GitHub API error ${response.status}`);
+    return response.json();
+}
+
+async function fetchReposViaREST(login) {
+    const allRepos = [];
+    let page = 1;
+    while (true) {
+        const repos = await restFetch(`${GITHUB_API_BASE}/users/${login}/repos?per_page=100&page=${page}&sort=pushed&direction=desc&type=public`);
+        if (!repos.length) break;
+        allRepos.push(...repos);
+        if (repos.length < 100) break;
+        page++;
+    }
+    const user = await restFetch(`${GITHUB_API_BASE}/users/${login}`);
+    return {
+        repos: allRepos.map(r => ({
+            name: r.name,
+            nameWithOwner: r.full_name,
+            description: r.description,
+            url: r.html_url,
+            homepageUrl: r.homepage,
+            createdAt: r.created_at,
+            updatedAt: r.updated_at,
+            pushedAt: r.pushed_at,
+            stargazerCount: r.stargazers_count,
+            forkCount: r.forks_count,
+            isArchived: r.archived,
+            isFork: r.fork,
+            primaryLanguage: r.language ? { name: r.language, color: null } : null,
+            repositoryTopics: { nodes: (r.topics || []).map(t => ({ topic: { name: t } })) },
+        })),
+        followers: user.followers,
+        totalCount: user.public_repos,
+    };
+}
+
+async function fetchReleaseViaREST(owner, repo) {
+    const data = await restFetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/releases/latest`);
+    return { repository: { latestRelease: { tagName: data.tag_name } } };
+}
+
 // ===================== Repo Metadata Overrides =====================
 const REPO_OVERRIDES = {
     'todo-tui': {
@@ -302,7 +358,21 @@ const RepoManager = {
             this.render();
             this.updateStats(totalCount, followers, allRepos);
         } catch (err) {
-            console.warn('[RepoManager] Fetch failed:', err.message);
+            console.warn('[RepoManager] GraphQL failed, trying REST fallback:', err.message);
+
+            try {
+                const { repos, followers, totalCount } = await fetchReposViaREST('agniveshtm');
+                this._repos = repos;
+                this._followers = followers;
+                this._totalCount = totalCount;
+                this._lastFetched = Date.now();
+                await setCachedResponse(this.cacheKey, repos);
+                this.render();
+                this.updateStats(totalCount, followers, repos);
+                return;
+            } catch (restErr) {
+                console.warn('[RepoManager] REST fallback also failed:', restErr.message);
+            }
 
             if (err.message === 'RATE_LIMITED') {
                 this._rateLimitError = err;
@@ -525,9 +595,15 @@ async function fetchLatestRelease() {
     try {
         const cached = await getCachedResponse(queryKey, 5 * 60 * 1000);
         const data = cached ? cached.data : await (async () => {
-            const d = await graphqlRequest(LATEST_RELEASE_QUERY, { owner, repo });
-            await setCachedResponse(queryKey, d);
-            return d;
+            try {
+                const d = await graphqlRequest(LATEST_RELEASE_QUERY, { owner, repo });
+                await setCachedResponse(queryKey, d);
+                return d;
+            } catch {
+                const d = await fetchReleaseViaREST(owner, repo);
+                await setCachedResponse(queryKey, d);
+                return d;
+            }
         })();
 
         if (data?.repository?.latestRelease) {
