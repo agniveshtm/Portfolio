@@ -184,6 +184,7 @@ const USER_REPOS_QUERY = `
                     languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
                         edges { size node { name color } }
                     }
+                    latestRelease { tagName }
                     repositoryTopics(first: 20) {
                         nodes { topic { name } }
                     }
@@ -228,6 +229,8 @@ const RepoManager = {
     _timer: null,
     _repos: [],
     _sort: 'stars',
+    _page: 1,
+    perPage: 6,
 
     init() {
         this.grid = document.getElementById('reposGrid');
@@ -245,6 +248,7 @@ const RepoManager = {
                 document.querySelectorAll('.filter-btn[data-sort]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this._sort = btn.dataset.sort;
+                this._page = 1;
                 this.render();
             });
         });
@@ -384,47 +388,79 @@ const RepoManager = {
             return;
         }
 
-        this.grid.innerHTML = sorted.map((repo, i) => this.cardHTML(repo, i)).join('');
+        const totalPages = Math.ceil(sorted.length / this.perPage);
+        if (this._page > totalPages) this._page = totalPages;
+        const start = (this._page - 1) * this.perPage;
+        const pageRepos = sorted.slice(start, start + this.perPage);
+
+        this.grid.innerHTML = pageRepos.map((repo, i) => this.cardHTML(repo, i)).join('');
+
+        const existingPaginator = document.querySelector('.repos-paginator');
+        if (existingPaginator) existingPaginator.remove();
+
+        if (totalPages > 1) {
+            const paginator = document.createElement('div');
+            paginator.className = 'repos-paginator';
+            paginator.innerHTML = `
+                <button class="page-btn" ${this._page <= 1 ? 'disabled' : ''} onclick="RepoManager.goPage(${this._page - 1})"><i class="fas fa-chevron-left"></i></button>
+                <span class="page-info">${this._page} / ${totalPages}</span>
+                <button class="page-btn" ${this._page >= totalPages ? 'disabled' : ''} onclick="RepoManager.goPage(${this._page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+            this.grid.parentElement.appendChild(paginator);
+        }
+
         this.updateStatus();
 
         this.grid.querySelectorAll('.project-card').forEach((card, i) => {
             card.classList.add('reveal');
-            card.style.transitionDelay = `${i * 60}ms`;
+            card.style.transitionDelay = `${i * 50}ms`;
             observer.observe(card);
         });
+    },
+
+    goPage(page) {
+        this._page = page;
+        this.render();
+        document.getElementById('reposGrid')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     },
 
     cardHTML(repo, index) {
         const override = REPO_OVERRIDES[repo.name] || {};
         const icon = override.icon || this.langIcon(repo.primaryLanguage?.name);
-        const desc = override.customDesc || repo.description || 'No description provided';
+        const desc = override.customDesc || repo.description || '';
         const lang = repo.primaryLanguage?.name || '';
         const langColor = repo.primaryLanguage?.color || '#6e7681';
         const stars = repo.stargazerCount;
         const topics = repo.repositoryTopics?.nodes?.map(t => t.topic.name) || [];
         const updated = this.timeAgo(new Date(repo.pushedAt));
         const homepage = repo.homepageUrl;
-        const displayTopics = topics.filter(t => !['python', 'javascript', 'html', 'css'].includes(t)).slice(0, 5);
+        const tag = repo.latestRelease?.tagName || '';
+        const displayTopics = topics.filter(t => !['python', 'javascript', 'html', 'css'].includes(t)).slice(0, 3);
 
         return `
-            <div class="project-card" style="animation-delay: ${index * 60}ms">
+            <div class="project-card">
                 <div class="project-card-header">
-                    <i class="${icon} project-icon${lang === 'Python' ? ' django-icon' : ''}"></i>
+                    <div class="project-card-title-row">
+                        <i class="${icon} project-icon${lang === 'Python' ? ' django-icon' : ''}"></i>
+                        <div>
+                            <h3>${repo.name}${tag ? ` <span class="version-tag">${tag}</span>` : ''}</h3>
+                            <span class="project-type">${lang ? lang : ''}${lang && this.categoryFromTopics(topics) !== 'Project' ? ' · ' + this.categoryFromTopics(topics) : ''}</span>
+                        </div>
+                    </div>
                     <div class="project-card-links">
                         ${stars > 0 ? `<span class="repo-stars"><i class="fas fa-star"></i> ${stars}</span>` : ''}
                         <a href="${repo.url}" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
                     </div>
                 </div>
-                <h3>${repo.name}</h3>
-                <p class="project-type">${lang ? lang + ' · ' : ''}${this.categoryFromTopics(topics)}</p>
-                <p>${this.escapeHTML(desc)}</p>
+                ${desc ? `<p class="project-desc">${this.escapeHTML(desc)}</p>` : ''}
                 ${homepage ? `<a href="${homepage}" target="_blank" class="repo-homepage"><i class="fas fa-external-link-alt"></i> ${this.cleanURL(homepage)}</a>` : ''}
                 ${displayTopics.length > 0 ? `<div class="repo-topics">${displayTopics.map(t => `<span>${t}</span>`).join('')}</div>` : ''}
-                <div class="repo-meta">
-                    ${lang ? `<span><span class="lang-dot" style="background:${langColor}"></span> ${lang}</span>` : ''}
-                    <span><i class="fas fa-code-branch"></i> ${repo.forkCount} forks</span>
+                <div class="repo-footer">
+                    <div class="repo-meta">
+                        ${lang ? `<span><span class="lang-dot" style="background:${langColor}"></span> ${lang}</span>` : ''}
+                        ${repo.forkCount > 0 ? `<span><i class="fas fa-code-branch"></i> ${repo.forkCount}</span>` : ''}
+                    </div>
+                    <span class="repo-updated">${updated}</span>
                 </div>
-                <div class="repo-updated">Updated ${updated}</div>
             </div>`;
     },
 
@@ -930,6 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTypingEffect();
     fetchLatestRelease();
     RepoManager.init();
+    IsometricContrib.init();
     updateNavbar();
     updateActiveLink();
 });
