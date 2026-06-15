@@ -181,6 +181,9 @@ const USER_REPOS_QUERY = `
                     isArchived
                     isFork
                     primaryLanguage { name color }
+                    languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
+                        edges { size node { name color } }
+                    }
                     repositoryTopics(first: 20) {
                         nodes { topic { name } }
                     }
@@ -190,62 +193,6 @@ const USER_REPOS_QUERY = `
         }
     }
 `;
-
-// ===================== REST API Fallback =====================
-const GITHUB_API_BASE = 'https://api.github.com';
-
-async function restFetch(url) {
-    const token = getStoredToken();
-    const headers = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const response = await fetch(url, { headers });
-    if (response.status === 403 || response.status === 429) {
-        const reset = parseInt(response.headers.get('x-ratelimit-reset') || '0', 10) * 1000;
-        const err = new Error('RATE_LIMITED');
-        err.resetIn = Math.max(0, Math.ceil((reset - Date.now()) / 60000));
-        throw err;
-    }
-    if (!response.ok) throw new Error(`GitHub API error ${response.status}`);
-    return response.json();
-}
-
-async function fetchReposViaREST(login) {
-    const allRepos = [];
-    let page = 1;
-    while (true) {
-        const repos = await restFetch(`${GITHUB_API_BASE}/users/${login}/repos?per_page=100&page=${page}&sort=pushed&direction=desc&type=public`);
-        if (!repos.length) break;
-        allRepos.push(...repos);
-        if (repos.length < 100) break;
-        page++;
-    }
-    const user = await restFetch(`${GITHUB_API_BASE}/users/${login}`);
-    return {
-        repos: allRepos.map(r => ({
-            name: r.name,
-            nameWithOwner: r.full_name,
-            description: r.description,
-            url: r.html_url,
-            homepageUrl: r.homepage,
-            createdAt: r.created_at,
-            updatedAt: r.updated_at,
-            pushedAt: r.pushed_at,
-            stargazerCount: r.stargazers_count,
-            forkCount: r.forks_count,
-            isArchived: r.archived,
-            isFork: r.fork,
-            primaryLanguage: r.language ? { name: r.language, color: null } : null,
-            repositoryTopics: { nodes: (r.topics || []).map(t => ({ topic: { name: t } })) },
-        })),
-        followers: user.followers,
-        totalCount: user.public_repos,
-    };
-}
-
-async function fetchReleaseViaREST(owner, repo) {
-    const data = await restFetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/releases/latest`);
-    return { repository: { latestRelease: { tagName: data.tag_name } } };
-}
 
 // ===================== Repo Metadata Overrides =====================
 const REPO_OVERRIDES = {
@@ -357,6 +304,8 @@ const RepoManager = {
             await setCachedResponse(this.cacheKey, allRepos);
             this.render();
             this.updateStats(totalCount, followers, allRepos);
+            this.renderLanguages(allRepos);
+            this.fetchRecentActivity();
         } catch (err) {
             console.warn('[RepoManager] GraphQL failed, trying REST fallback:', err.message);
 
@@ -583,7 +532,158 @@ const RepoManager = {
 
     destroy() {
         if (this._timer) clearInterval(this._timer);
-    }
+    },
+
+    renderLanguages(repos) {
+        const langMap = {};
+        repos.forEach(repo => {
+            const edges = repo.languages?.edges || [];
+            edges.forEach(edge => {
+                const name = edge.node.name;
+                if (!langMap[name]) langMap[name] = { size: 0, color: edge.node.color };
+                langMap[name].size += edge.size;
+            });
+        });
+
+        const total = Object.values(langMap).reduce((s, l) => s + l.size, 0);
+        if (total === 0) return;
+
+        const sorted = Object.entries(langMap)
+            .sort((a, b) => b[1].size - a[1].size)
+            .slice(0, 8);
+
+        const container = document.getElementById('langBars');
+        if (!container) return;
+
+        container.innerHTML = sorted.map(([name, { color, size }]) => {
+            const pct = ((size / total) * 100).toFixed(1);
+            return `<div class="lang-row">
+                <div class="lang-row-header">
+                    <span class="lang-row-name"><span class="lang-row-dot" style="background:${color}"></span>${name}</span>
+                    <span class="lang-row-pct">${pct}%</span>
+                </div>
+                <div class="lang-row-track">
+                    <div class="lang-row-fill" style="background:${color}" data-width="${pct}"></div>
+                </div>
+            </div>`;
+        }).join('');
+
+        requestAnimationFrame(() => {
+            container.querySelectorAll('.lang-row-fill').forEach(fill => {
+                fill.style.width = fill.dataset.width + '%';
+            });
+        });
+    },
+
+    async fetchRecentActivity() {
+        const list = document.getElementById('activityList');
+        if (!list) return;
+
+        const cacheKey = 'recentEvents_REST_agniveshtm';
+        try {
+            const cached = await getCachedResponse(cacheKey, 10 * 60 * 1000);
+            if (cached) {
+                this.renderActivity(cached.data);
+                return;
+            }
+        } catch {}
+
+        try {
+            const token = getStoredToken();
+            const url = 'https://api.github.com/users/agniveshtm/events/public?per_page=30';
+            const headers = { 'Accept': 'application/vnd.github.v3+json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(url, { headers });
+
+            if (res.status === 403 || res.status === 429) {
+                const resetIn = Math.max(0, Math.ceil((parseInt(res.headers.get('x-ratelimit-reset') || '0', 10) * 1000 - Date.now()) / 60000));
+                throw new Error(`RATE_LIMITED:${resetIn}`);
+            }
+
+            if (!res.ok) throw new Error(`REST API ${res.status}`);
+
+            const events = await res.json();
+            if (!Array.isArray(events) || events.length === 0) {
+                list.innerHTML = `<div class="activity-empty">No recent public activity</div>`;
+                return;
+            }
+            await setCachedResponse(cacheKey, events);
+            this.renderActivity(events);
+        } catch (err) {
+            console.warn('[Activity] Fetch failed:', err.message);
+            if (err.message.startsWith('RATE_LIMITED')) {
+                const resetIn = err.message.split(':')[1] || '?';
+                list.innerHTML = `<div class="activity-empty"><i class="fas fa-clock"></i> Rate limited — resets in ~${resetIn}m</div>`;
+            } else {
+                list.innerHTML = `<div class="activity-empty"><i class="fas fa-exclamation-circle"></i> Could not load activity</div>`;
+            }
+        }
+    },
+
+    renderActivity(events) {
+        const list = document.getElementById('activityList');
+        if (!list) return;
+
+        if (!events.length) {
+            list.innerHTML = `<div class="activity-empty">No recent public activity</div>`;
+            return;
+        }
+
+        list.innerHTML = events.slice(0, 10).map(ev => {
+            const { icon, iconClass, text } = this.formatEvent(ev);
+            return `<div class="activity-item">
+                <div class="activity-icon ${iconClass}"><i class="${icon}"></i></div>
+                <div class="activity-body">
+                    <p>${text}</p>
+                    <div class="activity-time">${this.timeAgo(new Date(ev.created_at))}</div>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    formatEvent(ev) {
+        const repo = ev.repo?.name || '';
+        const repoLink = `<a href="https://github.com/${repo}" target="_blank">${repo.split('/').pop()}</a>`;
+        const type = ev.type;
+
+        switch (type) {
+            case 'PushEvent': {
+                const commits = ev.payload?.commits || [];
+                const msg = commits[0]?.message || 'pushed commits';
+                const count = commits.length;
+                return { icon: 'fas fa-code-commit', iconClass: 'push', text: `Pushed ${count > 1 ? `<strong>${count} commits</strong>` : `<strong>${this.escapeHTML(msg.split('\n')[0])}</strong>`} to ${repoLink}` };
+            }
+            case 'CreateEvent': {
+                const refType = ev.payload?.ref_type || 'repository';
+                const ref = ev.payload?.ref;
+                return { icon: 'fas fa-plus', iconClass: 'create', text: `Created ${ref ? refType + ' <strong>' + this.escapeHTML(ref) + '</strong>' : refType} on ${repoLink}` };
+            }
+            case 'DeleteEvent': {
+                return { icon: 'fas fa-trash', iconClass: 'other', text: `Deleted ${ev.payload?.ref_type || 'ref'} <strong>${this.escapeHTML(ev.payload?.ref || '')}</strong> on ${repoLink}` };
+            }
+            case 'ReleaseEvent': {
+                const tag = ev.payload?.release?.tag_name || '';
+                return { icon: 'fas fa-tag', iconClass: 'star', text: `Released <strong>${this.escapeHTML(tag)}</strong> on ${repoLink}` };
+            }
+            case 'WatchEvent':
+                return { icon: 'fas fa-star', iconClass: 'star', text: `Starred ${repoLink}` };
+            case 'ForkEvent':
+                return { icon: 'fas fa-code-fork', iconClass: 'fork', text: `Forked ${repoLink}` };
+            case 'IssuesEvent': {
+                const action = ev.payload?.action || 'opened';
+                return { icon: 'fas fa-circle-dot', iconClass: 'other', text: `${action} issue on ${repoLink}` };
+            }
+            case 'PullRequestEvent': {
+                const action = ev.payload?.action || 'opened';
+                return { icon: 'fas fa-code-pull-request', iconClass: 'create', text: `${action} PR on ${repoLink}` };
+            }
+            case 'IssueCommentEvent':
+                return { icon: 'fas fa-comment', iconClass: 'other', text: `Commented on issue in ${repoLink}` };
+            default:
+                return { icon: 'fas fa-circle', iconClass: 'other', text: `${type} on ${repoLink}` };
+        }
+    },
 };
 
 // ===================== Release Fetcher =====================

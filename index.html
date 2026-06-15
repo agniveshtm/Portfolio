@@ -96,23 +96,6 @@ print(me.build(<span class="string">"todo-tui"</span>))
         </div>
     </section>
 
-    <!-- Latest Release Banner -->
-    <section class="release-banner" id="release-banner">
-        <div class="release-content">
-            <div class="release-icon">
-                <i class="fas fa-rocket"></i>
-            </div>
-            <div class="release-text">
-                <span class="release-badge">NEW</span>
-                <h3>todo-tui <span class="release-version">v0.1.1</span> — Just Released!</h3>
-                <p>A feature-rich, keyboard-driven TUI todo app built with Python & Textual</p>
-            </div>
-            <a href="https://github.com/agniveshtm/todo-tui" target="_blank" class="btn btn-accent">
-                <i class="fab fa-github"></i> View on GitHub
-            </a>
-        </div>
-    </section>
-
     <!-- About Section -->
     <section id="about" class="about">
         <div class="container">
@@ -156,43 +139,6 @@ print(me.build(<span class="string">"todo-tui"</span>))
         <div class="container">
             <h2 class="section-title">Featured <span class="highlight">Projects</span></h2>
             <p class="section-subtitle">Things I've built, broken, and rebuilt again</p>
-
-            <!-- Featured: todo-tui -->
-            <div class="project-featured" id="featured-todo-tui">
-                <div class="project-featured-badge">Latest Release</div>
-                <div class="project-featured-content">
-                    <div class="project-featured-info">
-                        <h3>todo-tui <span class="version-tag" data-repo="agniveshtm/todo-tui">v0.1.1</span></h3>
-                        <p class="project-type"><i class="fas fa-terminal"></i> Terminal User Interface · Python + Textual</p>
-                        <p>A feature-rich, keyboard-driven Terminal User Interface (TUI) todo application. Manage tasks directly from the terminal with a clean, dark-themed interface, full keyboard navigation, and instant feedback. Built with Python and the Textual framework.</p>
-                        <div class="project-tags">
-                            <span>Python</span>
-                            <span>Textual</span>
-                            <span>TUI</span>
-                            <span>UV</span>
-                            <span>pytest</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://github.com/agniveshtm/todo-tui" target="_blank" class="btn btn-sm">
-                                <i class="fab fa-github"></i> Source Code
-                            </a>
-                        </div>
-                    </div>
-                    <div class="project-featured-preview">
-                        <div class="terminal-preview">
-                            <div class="terminal-header">
-                                <span class="dot red"></span>
-                                <span class="dot yellow"></span>
-                                <span class="dot green"></span>
-                                <span class="terminal-title">todo-tui</span>
-                            </div>
-                            <div class="terminal-body">
-                                <img src="Todo-Task Area (Screenshot).png" alt="todo-tui TUI screenshot" class="tui-screenshot">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Other Projects Grid -->
             <div class="repos-toolbar" id="reposToolbar">
@@ -331,6 +277,25 @@ print(me.build(<span class="string">"todo-tui"</span>))
                     <span class="stat-label">Coding Since</span>
                 </div>
             </div>
+
+            <div class="github-details">
+                <!-- Language Breakdown -->
+                <div class="lang-breakdown" id="langBreakdown">
+                    <h3><i class="fas fa-chart-pie"></i> Languages</h3>
+                    <div class="lang-bars" id="langBars"></div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="recent-activity" id="recentActivity">
+                    <h3><i class="fas fa-clock-rotate-left"></i> Recent Activity</h3>
+                    <div class="activity-list" id="activityList">
+                        <div class="activity-skeleton"></div>
+                        <div class="activity-skeleton"></div>
+                        <div class="activity-skeleton"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="github-cta">
                 <a href="https://github.com/agniveshtm" target="_blank" class="btn btn-primary">
                     <i class="fab fa-github"></i> See All Repos
