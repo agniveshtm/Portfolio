@@ -20,7 +20,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "User-Agent: portfolio-cache" > /tmp/repos.json
 
-          jq -s '{
+          jq '{
             repos: [.[] | select(.archived == false) | {
               name: .name,
               description: (.description // ""),
