@@ -14,36 +14,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch repos via GraphQL
-        id: graphql
-        if: ${{ env.GITHUB_TOKEN != '' }}
+      - name: Fetch and build cache
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REPOS=$(curl -s -H "Authorization: bearer $GITHUB_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"query":"query { user(login:\"agniveshtm\") { repositories(first:100,orderBy:{field:UPDATED_AT,direction:DESC},affiliations:[OWNER]) { nodes { name description primaryLanguage { name } repositoryTopics(first:10) { nodes { topic { name } } } updatedAt url homepageUrl isFork isPrivate isArchived } } } }"}' \
-            https://api.github.com/graphql | jq -r '.data.user.repositories.nodes')
-          echo "repos=$REPOS" >> "$GITHUB_OUTPUT"
-          echo "source=graphql" >> "$GITHUB_OUTPUT"
+          # Try GraphQL first
+          if [ -n "$GITHUB_TOKEN" ]; then
+            echo "Trying GraphQL..."
+            RESP=$(curl -sf -H "Authorization: bearer $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"query":"query { user(login:\"agniveshtm\") { repositories(first:100,orderBy:{field:UPDATED_AT,direction:DESC},affiliations:[OWNER]) { nodes { name description primaryLanguage { name } repositoryTopics(first:10) { nodes { topic { name } } } updatedAt url homepageUrl isFork isPrivate isArchived } } } }"}' \
+              https://api.github.com/graphql) && {
+              echo "$RESP" | jq '.data.user.repositories.nodes' > /tmp/repos.json
+              echo "source=graphql" > /tmp/source.txt
+              echo "GraphQL succeeded"
+            } || echo "GraphQL failed, trying REST..."
+          fi
 
-      - name: Fetch repos via REST
-        id: rest
-        if: steps.graphql.outcome == 'skipped' || steps.graphql.outcome == 'failure'
-        run: |
-          REPOS=$(curl -s "https://api.github.com/users/agniveshtm/repos?per_page=100&sort=updated&type=owner" \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "User-Agent: portfolio-cache")
-          echo "repos=$REPOS" >> "$GITHUB_OUTPUT"
-          echo "source=rest" >> "$GITHUB_OUTPUT"
+          # Fallback to REST
+          if [ ! -f /tmp/repos.json ]; then
+            echo "Trying REST..."
+            curl -sf "https://api.github.com/users/agniveshtm/repos?per_page=100&sort=updated&type=owner" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "User-Agent: portfolio-cache" > /tmp/repos.json && {
+              echo "source=rest" > /tmp/source.txt
+              echo "REST succeeded"
+            } || {
+              echo "REST failed"
+              if [ -f cache.json ]; then
+                echo "Using existing cache"
+                exit 0
+              else
+                echo "No cache available"
+                exit 1
+              fi
+            }
+          fi
 
-      - name: Build cache.json
-        run: |
-          REPOS="${{ steps.graphql.outputs.repos || steps.rest.outputs.repos }}"
-          SOURCE="${{ steps.graphql.outputs.source || steps.rest.outputs.source }}"
+          # Build cache.json
+          SOURCE=$(cat /tmp/source.txt)
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-          echo "$REPOS" | jq --arg src "$SOURCE" --arg now "$NOW" '{
+          jq --arg src "$SOURCE" --arg now "$NOW" '{
             repos: [.[] | select(.isArchived == false) | {
               name: .name,
               description: (.description // ""),
@@ -59,7 +70,9 @@ jobs:
             fetchedAt: $now,
             source: $src,
             count: (. | length)
-          }' > cache.json
+          }' /tmp/repos.json > cache.json
+
+          echo "Saved $(jq .count cache.json) repos (source: $SOURCE)"
 
       - name: Commit cache.json
         run: |
