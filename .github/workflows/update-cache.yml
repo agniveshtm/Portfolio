@@ -18,8 +18,9 @@ jobs:
         run: |
           curl -sf "https://api.github.com/users/agniveshtm/repos?per_page=100&sort=updated&type=owner" \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "User-Agent: portfolio-cache" | \
-          jq '{
+            -H "User-Agent: portfolio-cache" > /tmp/repos.json
+
+          jq -s '{
             repos: [.[] | select(.archived == false) | {
               name: .name,
               description: (.description // ""),
@@ -33,9 +34,8 @@ jobs:
               isArchived: (.archived // false)
             }],
             fetchedAt: (now | todate),
-            source: "rest",
-            count: (.repos | length)
-          }' > cache.json
+            source: "rest"
+          } | .count = (.repos | length)' /tmp/repos.json > cache.json
 
       - name: Commit
         run: |
