@@ -1,0 +1,70 @@
+name: Update Repo Cache
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch repos via GraphQL
+        id: graphql
+        if: ${{ env.GITHUB_TOKEN != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPOS=$(curl -s -H "Authorization: bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"query { user(login:\"agniveshtm\") { repositories(first:100,orderBy:{field:UPDATED_AT,direction:DESC},affiliations:[OWNER]) { nodes { name description primaryLanguage { name } repositoryTopics(first:10) { nodes { topic { name } } } updatedAt url homepageUrl isFork isPrivate isArchived } } } }"}' \
+            https://api.github.com/graphql | jq -r '.data.user.repositories.nodes')
+          echo "repos=$REPOS" >> "$GITHUB_OUTPUT"
+          echo "source=graphql" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch repos via REST
+        id: rest
+        if: steps.graphql.outcome == 'skipped' || steps.graphql.outcome == 'failure'
+        run: |
+          REPOS=$(curl -s "https://api.github.com/users/agniveshtm/repos?per_page=100&sort=updated&type=owner" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "User-Agent: portfolio-cache")
+          echo "repos=$REPOS" >> "$GITHUB_OUTPUT"
+          echo "source=rest" >> "$GITHUB_OUTPUT"
+
+      - name: Build cache.json
+        run: |
+          REPOS="${{ steps.graphql.outputs.repos || steps.rest.outputs.repos }}"
+          SOURCE="${{ steps.graphql.outputs.source || steps.rest.outputs.source }}"
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          echo "$REPOS" | jq --arg src "$SOURCE" --arg now "$NOW" '{
+            repos: [.[] | select(.isArchived == false) | {
+              name: .name,
+              description: (.description // ""),
+              language: (.language // .primaryLanguage.name // ""),
+              topics: (.topics // [.repositoryTopics.nodes[]?.topic.name] // []),
+              updatedAt: (.updatedAt // .updated_at // ""),
+              htmlUrl: (.htmlUrl // .url // .html_url // ""),
+              homepageUrl: (.homepageUrl // .homepage // ""),
+              isFork: (.isFork // .fork // false),
+              isPrivate: (.isPrivate // .private // false),
+              isArchived: (.isArchived // .archived // false)
+            }],
+            fetchedAt: $now,
+            source: $src,
+            count: (. | length)
+          }' > cache.json
+
+      - name: Commit cache.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cache.json
+          git diff --cached --quiet || git commit -m "chore: update repo cache [skip ci]"
+          git push

@@ -1,0 +1,164 @@
+{
+  "repos": [
+    {
+      "name": "Portfolio",
+      "description": "",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-06-17T15:28:40Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "goml-py",
+      "description": "GOML (Go Markup Language) is a simple, human-readable data format designed to solve common pain points in configuration files like JSON, YAML, and TOML. It offers three flexible syntax styles Flat, Dot Notation, and Block—allowing developers to choose the best approach for their use case, to complex nested configurations.",
+      "language": "HTML",
+      "topics": [],
+      "updatedAt": "2026-06-16T12:43:26Z",
+      "htmlUrl": "https://github.com/agniveshtm/goml-py",
+      "homepageUrl": "https://aswanidev-vs.github.io/goml/",
+      "isFork": true,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "todo-tui",
+      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
+      "language": "Python",
+      "topics": [
+        "benchmark",
+        "pytest",
+        "python",
+        "textual",
+        "todo",
+        "todo-list",
+        "tui",
+        "tui-app",
+        "uv"
+      ],
+      "updatedAt": "2026-06-13T16:15:02Z",
+      "htmlUrl": "https://github.com/agniveshtm/todo-tui",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "balance",
+      "description": "",
+      "language": "TypeScript",
+      "topics": [],
+      "updatedAt": "2026-06-11T02:13:16Z",
+      "htmlUrl": "https://github.com/agniveshtm/balance",
+      "homepageUrl": "https://balance-nine-ruby.vercel.app",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "agniveshtm",
+      "description": "Config files for my GitHub profile.",
+      "language": "",
+      "topics": [
+        "config",
+        "github-config"
+      ],
+      "updatedAt": "2026-06-10T09:37:52Z",
+      "htmlUrl": "https://github.com/agniveshtm/agniveshtm",
+      "homepageUrl": "https://github.com/agniveshtm",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "Me_Malayali_Gamer",
+      "description": "",
+      "language": "HTML",
+      "topics": [],
+      "updatedAt": "2026-05-23T06:45:44Z",
+      "htmlUrl": "https://github.com/agniveshtm/Me_Malayali_Gamer",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "skills-introduction-to-github",
+      "description": "My clone repository",
+      "language": "",
+      "topics": [],
+      "updatedAt": "2026-05-10T07:06:27Z",
+      "htmlUrl": "https://github.com/agniveshtm/skills-introduction-to-github",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "introduction-to-github",
+      "description": "Get started using GitHub in less than an hour.",
+      "language": "",
+      "topics": [],
+      "updatedAt": "2026-05-10T06:54:04Z",
+      "htmlUrl": "https://github.com/agniveshtm/introduction-to-github",
+      "homepageUrl": "",
+      "isFork": true,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "Carbon_Scope",
+      "description": "",
+      "language": "Python",
+      "topics": [],
+      "updatedAt": "2025-12-26T18:04:50Z",
+      "htmlUrl": "https://github.com/agniveshtm/Carbon_Scope",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "stock-analysis",
+      "description": "",
+      "language": "Cython",
+      "topics": [],
+      "updatedAt": "2025-12-26T18:04:39Z",
+      "htmlUrl": "https://github.com/agniveshtm/stock-analysis",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "SCHOOLARTSPLANNER",
+      "description": "This School Arts Planner is a python-based management system designed to organize and streamline school arts festivals. It helps administrators to register events, manage participants, track winners and generate certificates all in one interface.",
+      "language": "Python",
+      "topics": [],
+      "updatedAt": "2025-12-26T18:04:19Z",
+      "htmlUrl": "https://github.com/agniveshtm/SCHOOLARTSPLANNER",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
+      "name": "DJANGO",
+      "description": "",
+      "language": "HTML",
+      "topics": [],
+      "updatedAt": "2025-11-03T18:15:02Z",
+      "htmlUrl": "https://github.com/agniveshtm/DJANGO",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    }
+  ],
+  "fetchedAt": "2026-06-17T15:46:50.318Z",
+  "source": "rest",
+  "count": 12
+}
