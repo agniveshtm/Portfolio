@@ -14,67 +14,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch and build cache
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update cache
         run: |
-          # Try GraphQL first
-          if [ -n "$GITHUB_TOKEN" ]; then
-            echo "Trying GraphQL..."
-            RESP=$(curl -sf -H "Authorization: bearer $GITHUB_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d '{"query":"query { user(login:\"agniveshtm\") { repositories(first:100,orderBy:{field:UPDATED_AT,direction:DESC},affiliations:[OWNER]) { nodes { name description primaryLanguage { name } repositoryTopics(first:10) { nodes { topic { name } } } updatedAt url homepageUrl isFork isPrivate isArchived } } } }"}' \
-              https://api.github.com/graphql) && {
-              echo "$RESP" | jq '.data.user.repositories.nodes' > /tmp/repos.json
-              echo "source=graphql" > /tmp/source.txt
-              echo "GraphQL succeeded"
-            } || echo "GraphQL failed, trying REST..."
-          fi
-
-          # Fallback to REST
-          if [ ! -f /tmp/repos.json ]; then
-            echo "Trying REST..."
-            curl -sf "https://api.github.com/users/agniveshtm/repos?per_page=100&sort=updated&type=owner" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "User-Agent: portfolio-cache" > /tmp/repos.json && {
-              echo "source=rest" > /tmp/source.txt
-              echo "REST succeeded"
-            } || {
-              echo "REST failed"
-              if [ -f cache.json ]; then
-                echo "Using existing cache"
-                exit 0
-              else
-                echo "No cache available"
-                exit 1
-              fi
-            }
-          fi
-
-          # Build cache.json
-          SOURCE=$(cat /tmp/source.txt)
-          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          jq --arg src "$SOURCE" --arg now "$NOW" '{
-            repos: [.[] | select(.isArchived == false) | {
+          curl -sf "https://api.github.com/users/agniveshtm/repos?per_page=100&sort=updated&type=owner" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "User-Agent: portfolio-cache" | \
+          jq '{
+            repos: [.[] | select(.archived == false) | {
               name: .name,
               description: (.description // ""),
-              language: (.language // .primaryLanguage.name // ""),
-              topics: (.topics // [.repositoryTopics.nodes[]?.topic.name] // []),
-              updatedAt: (.updatedAt // .updated_at // ""),
-              htmlUrl: (.htmlUrl // .url // .html_url // ""),
-              homepageUrl: (.homepageUrl // .homepage // ""),
-              isFork: (.isFork // .fork // false),
-              isPrivate: (.isPrivate // .private // false),
-              isArchived: (.isArchived // .archived // false)
+              language: (.language // ""),
+              topics: (.topics // []),
+              updatedAt: (.updated_at // ""),
+              htmlUrl: (.html_url // ""),
+              homepageUrl: (.homepage // ""),
+              isFork: (.fork // false),
+              isPrivate: (.private // false),
+              isArchived: (.archived // false)
             }],
-            fetchedAt: $now,
-            source: $src,
-            count: (. | length)
-          }' /tmp/repos.json > cache.json
+            fetchedAt: (now | todate),
+            source: "rest",
+            count: (.repos | length)
+          }' > cache.json
 
-          echo "Saved $(jq .count cache.json) repos (source: $SOURCE)"
-
-      - name: Commit cache.json
+      - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
