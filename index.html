@@ -1,373 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Agnivesh Manojkumar — CS Student, Vibe-Coder, ML & Web Developer. Building at the intersection of machine learning, web development, and design.">
-    <meta name="theme-color" content="#0a0a0f">
-    <title>Agnivesh Manojkumar | Portfolio</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://api.github.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agnivesh Manojkumar — Developer · Builder · Curious</title>
+<meta name="description" content="Portfolio of Agnivesh Manojkumar — building at the intersection of machine learning, web development, and design." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <a href="#home" class="skip-link">Skip to content</a>
 
-    <!-- Navigation -->
-    <nav class="navbar" role="navigation" aria-label="Main navigation">
-        <div class="nav-container">
-            <a href="#home" class="nav-logo"><agnivesh/></a>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#home" class="nav-link active">Home</a></li>
-                <li><a href="#about" class="nav-link">About</a></li>
-                <li><a href="#projects" class="nav-link">Projects</a></li>
-                <li><a href="#skills" class="nav-link">Skills</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
-            <div class="nav-toggle" id="navToggle" aria-label="Toggle navigation" role="button" tabindex="0" aria-expanded="false">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </div>
-    </nav>
+<!-- BOOT SEQUENCE -->
+<div class="boot" id="boot">
+  <div class="boot__inner">
+    <div class="boot__lines" id="bootLines"></div>
+    <div class="boot__bar"><span class="boot__bar-fill" id="bootBar"></span></div>
+    <div class="boot__pct" id="bootPct">0%</div>
+  </div>
+</div>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-bg"></div>
-        <div class="hero-content">
-            <div class="hero-text">
-                <p class="hero-greeting">Hi there, I'm</p>
-                <h1 class="hero-name">Agnivesh Manojkumar</h1>
-                <h2 class="hero-title"><span class="typing-text" id="typingText"></span><span class="typing-cursor">|</span></h2>
-                <p class="hero-desc">
-                    Building at the intersection of machine learning, web development, and design.
-                    Currently deep in Django, Linux sysadmin, and generative AI.
-                </p>
-                <div class="hero-actions">
-                    <a href="#projects" class="btn btn-primary">
-                        <i class="fas fa-code"></i> View Projects
-                    </a>
-                    <a href="#contact" class="btn btn-outline">
-                        <i class="fas fa-envelope"></i> Contact Me
-                    </a>
-                    <a href="https://github.com/agniveshtm" target="_blank" class="btn btn-outline">
-                        <i class="fab fa-github"></i> GitHub
-                    </a>
-                </div>
-                <div class="hero-socials">
-                    <a href="https://github.com/agniveshtm" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                    <a href="https://www.linkedin.com/in/agnivesh-manojkumar" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="https://twitter.com/agniveshtm2724" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="dot red"></span>
-                        <span class="dot yellow"></span>
-                        <span class="dot green"></span>
-                        <span class="code-title">portfolio.py</span>
-                    </div>
-                    <div class="code-body">
-                        <pre><code><span class="keyword">class</span> <span class="class-name">Agnivesh</span>:
-    <span class="keyword">def</span> <span class="func">__init__</span>(self):
-        self.role = <span class="string">"Developer & Creator"</span>
-        self.stack = [<span class="string">"Django"</span>, <span class="string">"Python"</span>, <span class="string">"ML"</span>]
-        self.vibe = <span class="string">"Full-Stack Energy ⚡"</span>
+<!-- NOISE OVERLAY -->
+<div class="noise" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
 
-    <span class="keyword">def</span> <span class="func">build</span>(self, idea):
-        <span class="keyword">return</span> <span class="string">f"Built {idea} with ❤️"</span>
+<!-- CUSTOM CURSOR -->
+<div class="cursor" id="cursor" aria-hidden="true">
+  <div class="cursor__dot"></div>
+  <div class="cursor__ring"></div>
+</div>
 
-me = Agnivesh()
-print(me.build(<span class="string">"todo-tui"</span>))
-<span class="comment"># Output: Built todo-tui with ❤️</span></code></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="scroll-indicator">
-            <span>Scroll down</span>
-            <i class="fas fa-chevron-down"></i>
-        </div>
-    </section>
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar__left">
+    <span class="topbar__dot" aria-hidden="true"></span>
+    <span class="topbar__name">agnivesh@portfolio</span>
+    <span class="topbar__sep">/</span>
+    <span class="topbar__path">~/main</span>
+    <span class="topbar__branch" aria-hidden="true">* main</span>
+  </div>
+  <nav class="topbar__nav" aria-label="Primary">
+    <a href="#home" data-target="home"><span class="kbd">01</span> home</a>
+    <a href="#about" data-target="about"><span class="kbd">02</span> about</a>
+    <a href="#work" data-target="work"><span class="kbd">03</span> work</a>
+    <a href="#stack" data-target="stack"><span class="kbd">04</span> stack</a>
+    <a href="#contact" data-target="contact"><span class="kbd">05</span> contact</a>
+  </nav>
+  <div class="topbar__right">
+    <span class="topbar__time" id="clock">--:--:--</span>
+    <!-- <span class="topbar__pill"><span class="pulse"></span>online</span> -->
+  </div>
+</header>
 
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
-            <h2 class="section-title"><span class="highlight">About</span> Me</h2>
-            <p class="section-subtitle">A glimpse into who I am and what drives me</p>
-            <div class="about-grid">
-                <div class="about-card">
-                    <div class="about-card-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <h3>🎓 Student</h3>
-                    <p>Computer Science student passionate about building real-world applications and exploring cutting-edge technologies.</p>
-                </div>
-                <div class="about-card">
-                    <div class="about-card-icon">
-                        <i class="fas fa-rocket"></i>
-                    </div>
-                    <h3>🚀 Builder</h3>
-                    <p>Co-building a startup with a focus on AI-powered web applications. Always shipping something new.</p>
-                </div>
-                <div class="about-card">
-                    <div class="about-card-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>🧠 Learner</h3>
-                    <p>Currently exploring Generative AI, Linux System Administration, containerisation with Docker & Kubernetes.</p>
-                </div>
-                <div class="about-card">
-                    <div class="about-card-icon">
-                        <i class="fas fa-palette"></i>
-                    </div>
-                    <h3>🎨 Designer</h3>
-                    <p>Passionate about clean UI/UX, crafting beautiful interfaces with Canva & Tailwind CSS.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<main>
 
-    <!-- Projects Section -->
-    <section id="projects" class="projects">
-        <div class="container">
-            <h2 class="section-title">Featured <span class="highlight">Projects</span></h2>
-            <p class="section-subtitle">Things I've built, broken, and rebuilt again</p>
+<!-- ============== HERO ============== -->
+<section class="hero" id="home">
+  <div class="hero__grid" aria-hidden="true"></div>
+  <div class="hero__cross" aria-hidden="true"></div>
 
-            <!-- Other Projects Grid -->
-            <div class="repos-toolbar" id="reposToolbar">
-                <div class="repos-filters">
-                    <button class="filter-btn active" data-sort="stars"><i class="fas fa-star"></i> Top Stars</button>
-                    <button class="filter-btn" data-sort="updated"><i class="fas fa-clock"></i> Recently Updated</button>
-                    <button class="filter-btn" data-sort="name"><i class="fas fa-arrow-down-a-z"></i> A–Z</button>
-                </div>
-                <div class="repos-status" id="reposStatus">
-                    <span class="repos-count"></span>
-                    <span class="repos-updated"></span>
-                </div>
-            </div>
-            <div class="projects-grid" id="reposGrid">
-                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
-                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
-                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
-                <div class="repo-skeleton"><div class="skeleton-header"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-tags"></div></div>
-            </div>
-        </div>
-    </section>
+  <div class="hero__wrap">
+    <div class="hero__meta">
+      <span class="tag tag--green">v2.6.0</span>
+      <span class="tag">/usr/local/bin/agnivesh</span>
+      <span class="tag tag--amber">maintainer: true</span>
+    </div>
 
-    <!-- Tech Stack Section -->
-    <section id="skills" class="skills">
-        <div class="container">
-            <h2 class="section-title">Tech <span class="highlight">Stack</span></h2>
-            <p class="section-subtitle">Tools, frameworks, and languages I work with</p>
+    <h1 class="hero__title">
+      <span class="line line--1"><em>Hi, I&rsquo;m</em> <span class="it">Agnivesh</span></span>
+      <span class="line line--2">I build things that</span>
+      <span class="line line--3">learn, scale, &amp; <span class="hl">delight.</span></span>
+    </h1>
 
-            <!-- Django Highlight -->
-            <div class="stack-highlight">
-                <div class="stack-highlight-icon">
-                    <i class="fab fa-python"></i>
-                </div>
-                <div class="stack-highlight-text">
-                    <h3>Django — My Full-Stack Powerhouse</h3>
-                    <p>My favourite and primary full-stack framework. I use Django for building robust, scalable web applications with clean architecture, ORM, admin panels, and RESTful APIs.</p>
-                </div>
-            </div>
+    <p class="hero__lede">
+      A computer science student <span class="bullet">&bull;</span> full-stack developer
+      <span class="bullet">&bull;</span> co-founding a startup. Currently
+      shipping with <span class="chip">Django</span> <span class="chip">Python</span>
+      <span class="chip">Generative AI</span> and breaking things with
+      <span class="chip">Linux</span> <span class="chip">Docker</span>.
+    </p>
 
-            <div class="skills-grid">
-                <div class="skill-category">
-                    <h3><i class="fas fa-code"></i> Languages</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag python">Python</span>
-                        <span class="skill-tag js">JavaScript</span>
-                        <span class="skill-tag html">HTML5</span>
-                        <span class="skill-tag css">CSS3</span>
-                        <span class="skill-tag c">C</span>
-                        <span class="skill-tag java">Java</span>
-                        <span class="skill-tag bash">Bash</span>
-                        <span class="skill-tag ps">PowerShell</span>
-                    </div>
-                </div>
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="#work">
+        <span>cd ~/projects</span>
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 8h11M8 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+      </a>
+      <a class="btn" href="https://github.com/agniveshtm" target="_blank" rel="noopener">
+        <span>git clone github</span>
+      </a>
+      <a class="btn btn--ghost" href="#contact">
+        <span>./say-hello.sh</span>
+      </a>
+    </div>
 
-                <div class="skill-category">
-                    <h3><i class="fas fa-layer-group"></i> Frameworks & Tools</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag django-tag">Django</span>
-                        <span class="skill-tag flask-tag">Flask</span>
-                        <span class="skill-tag tailwind">TailwindCSS</span>
-                        <span class="skill-tag bootstrap">Bootstrap</span>
-                        <span class="skill-tag git">Git</span>
-                        <span class="skill-tag docker">Docker</span>
-                        <span class="skill-tag k8s">Kubernetes</span>
-                    </div>
-                </div>
+    <div class="hero__panel" aria-hidden="false">
+      <div class="panel__chrome">
+        <span class="dot dot--r"></span>
+        <span class="dot dot--y"></span>
+        <span class="dot dot--g"></span>
+        <span class="panel__title">portfolio.py &mdash; agnivesh</span>
+        <span class="panel__hint">read-only</span>
+      </div>
+      <pre class="panel__code"><code><span class="ln">01</span>  <span class="kw">class</span> <span class="cls">Agnivesh</span>:
+<span class="ln">02</span>      <span class="kw">def</span> <span class="fn">__init__</span>(<span class="self">self</span>):
+<span class="ln">03</span>          <span class="self">self</span>.role    = <span class="str">"Developer &amp; Creator"</span>
+<span class="ln">04</span>          <span class="self">self</span>.stack   = [<span class="str">"Django"</span>, <span class="str">"Python"</span>, <span class="str">"ML"</span>, <span class="str">"Linux"</span>]
+<span class="ln">05</span>          <span class="self">self</span>.vibe    = <span class="str">"full-stack energy"</span>  <span class="cmt"># ⚡</span>
+<span class="ln">06</span>          <span class="self">self</span>.caffeine = <span class="num">∞</span>
+<span class="ln">07</span>
+<span class="ln">08</span>      <span class="kw">def</span> <span class="fn">build</span>(<span class="self">self</span>, idea: <span class="typ">str</span>) -&gt; <span class="typ">str</span>:
+<span class="ln">09</span>          <span class="kw">return</span> <span class="f">f</span><span class="str">"built </span><span class="it">{idea}</span><span class="str"> with ❤️"</span>
+<span class="ln">10</span>
+<span class="ln">11</span>  me = <span class="cls">Agnivesh</span>()
+<span class="ln">12</span>  <span class="fn">print</span>(me.<span class="fn">build</span>(<span class="str">"todo-tui"</span>))
+<span class="ln">13</span>  <span class="cmt">&gt;&gt;&gt; built todo-tui with ❤️</span><span class="caret">▍</span></code></pre>
+    </div>
 
-                <div class="skill-category">
-                    <h3><i class="fas fa-database"></i> Data & ML</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag numpy">NumPy</span>
-                        <span class="skill-tag pandas">Pandas</span>
-                        <span class="skill-tag mpl">Matplotlib</span>
-                        <span class="skill-tag sklearn">scikit-learn</span>
-                        <span class="skill-tag mysql">MySQL</span>
-                        <span class="skill-tag mongo">MongoDB</span>
-                    </div>
-                </div>
+    <div class="hero__strip" aria-hidden="true">
+      <div class="strip__item"><span class="strip__k">role</span><span class="strip__v">developer / builder</span></div>
+      <div class="strip__item"><span class="strip__k">based</span><span class="strip__v">earth · IST</span></div>
+      <div class="strip__item"><span class="strip__k">status</span><span class="strip__v"><span class="ok">●</span> open to collaborate</span></div>
+      <div class="strip__item"><span class="strip__k">uptime</span><span class="strip__v" id="uptime">0y 0d</span></div>
+    </div>
+  </div>
 
-                <div class="skill-category">
-                    <h3><i class="fas fa-cloud"></i> Cloud & DevOps</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag do">DigitalOcean</span>
-                        <span class="skill-tag render">Render</span>
-                        <span class="skill-tag linux">Linux</span>
-                        <span class="skill-tag nginx">Nginx</span>
-                    </div>
-                </div>
+  <a class="scroll" href="#about" aria-label="Scroll to about">
+    <span>scroll</span>
+    <svg viewBox="0 0 12 24" width="10" height="20" aria-hidden="true"><path d="M6 0v22M1 17l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+  </a>
+</section>
 
-                <div class="skill-category">
-                    <h3><i class="fas fa-paint-brush"></i> Design</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag canva">Canva</span>
-                        <span class="skill-tag powerbi">Power BI</span>
-                        <span class="skill-tag figma">Figma</span>
-                    </div>
-                </div>
+<!-- ============== MARQUEE ============== -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>django</span><span class="dotmark">◆</span>
+    <span>python</span><span class="dotmark">◆</span>
+    <span>machine learning</span><span class="dotmark">◆</span>
+    <span>generative ai</span><span class="dotmark">◆</span>
+    <span>linux sysadmin</span><span class="dotmark">◆</span>
+    <span>docker / k8s</span><span class="dotmark">◆</span>
+    <span>tailwindcss</span><span class="dotmark">◆</span>
+    <span>restful apis</span><span class="dotmark">◆</span>
+    <span>django</span><span class="dotmark">◆</span>
+    <span>python</span><span class="dotmark">◆</span>
+    <span>machine learning</span><span class="dotmark">◆</span>
+    <span>generative ai</span><span class="dotmark">◆</span>
+    <span>linux sysadmin</span><span class="dotmark">◆</span>
+    <span>docker / k8s</span><span class="dotmark">◆</span>
+    <span>tailwindcss</span><span class="dotmark">◆</span>
+    <span>restful apis</span><span class="dotmark">◆</span>
+  </div>
+</div>
 
-                <div class="skill-category">
-                    <h3><i class="fas fa-cog"></i> Currently Exploring</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag exploring">Generative AI</span>
-                        <span class="skill-tag exploring">Linux Sysadmin</span>
-                        <span class="skill-tag exploring">Containerisation</span>
-                        <span class="skill-tag exploring">Django REST</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- ============== ABOUT ============== -->
+<section class="about" id="about">
+  <div class="section__head">
+    <span class="section__no">// 02</span>
+    <h2 class="section__title"><span class="fn">about</span>(<span class="self">me</span>)</h2>
+    <p class="section__sub">a glimpse into who I am and what drives the keystrokes</p>
+  </div>
 
-    <!-- GitHub Activity Section -->
-    <section class="github-section">
-        <div class="container">
-            <h2 class="section-title">GitHub <span class="highlight">Activity</span></h2>
-            <p class="section-subtitle">Code speaks louder than words</p>
-            <div class="github-stats">
-                <div class="stat-card">
-                    <i class="fas fa-code-branch"></i>
-                    <span class="stat-number" data-target="9">0</span>
-                    <span class="stat-label">Public Repos</span>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-users"></i>
-                    <span class="stat-number" data-target="5">0</span>
-                    <span class="stat-label">Followers</span>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-star"></i>
-                    <span class="stat-number" data-target="3">0</span>
-                    <span class="stat-label">Stars Earned</span>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span class="stat-number" data-target="2024">2024</span>
-                    <span class="stat-label">Coding Since</span>
-                </div>
-            </div>
+  <div class="about__grid">
+    <div class="about__copy">
+      <p class="lede">
+        I&rsquo;m a <em>computer science student</em> who treats weekends
+        like launch windows &mdash; designing systems, writing clean code,
+        and occasionally arguing with a terminal at 3&nbsp;a.m.
+      </p>
+      <p>
+        Right now I&rsquo;m <span class="uline">co-building a startup</span>
+        focused on AI-powered web apps, while studying for exams I&rsquo;ll
+        forget in five years. I believe the best software is the kind that
+        feels inevitable &mdash; quiet, fast, and a little bit opinionated.
+      </p>
 
-            <div class="github-details">
-                <!-- Language Breakdown -->
-                <div class="lang-breakdown" id="langBreakdown">
-                    <h3><i class="fas fa-chart-pie"></i> Languages</h3>
-                    <div class="lang-bars" id="langBars"></div>
-                </div>
+      <ul class="about__list">
+        <li>
+          <span class="num">01</span>
+          <div>
+            <h4>Student of the craft</h4>
+            <p>CS undergrad with a hard bias for shipping real things over finishing tutorials.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">02</span>
+          <div>
+            <h4>Startup co-builder</h4>
+            <p>Designing AI-driven products with a small, sharp team. We move in weeks, not quarters.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">03</span>
+          <div>
+            <h4>Lifelong learner</h4>
+            <p>Currently diving into Generative AI, Linux sysadmin, and the deep lore of containerization.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">04</span>
+          <div>
+            <h4>Designer who codes</h4>
+            <p>Crafting interfaces in Tailwind &amp; Figma &mdash; obsessed with type, spacing, and motion.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
 
-                <!-- Recent Activity -->
-                <div class="recent-activity" id="recentActivity">
-                    <h3><i class="fas fa-clock-rotate-left"></i> Recent Activity</h3>
-                    <div class="activity-list" id="activityList">
-                        <div class="activity-skeleton"></div>
-                        <div class="activity-skeleton"></div>
-                        <div class="activity-skeleton"></div>
-                    </div>
-                </div>
-            </div>
+    <aside class="about__panel">
+      <div class="panel__chrome">
+        <span class="dot dot--r"></span>
+        <span class="dot dot--y"></span>
+        <span class="dot dot--g"></span>
+        <span class="panel__title">whoami &mdash; verbose</span>
+      </div>
+      <div class="kv">
+        <div class="kv__row"><span>name</span><b>Agnivesh Manojkumar</b></div>
+        <div class="kv__row"><span>role</span><b>Developer &amp; Builder</b></div>
+        <div class="kv__row"><span>focus</span><b>ML · Web · Generative AI</b></div>
+        <div class="kv__row"><span>edu</span><b>B.Sc. Computer Science</b></div>
+        <div class="kv__row"><span>location</span><b>Remote · Anywhere</b></div>
+        <div class="kv__row"><span>stack</span><b>Django · Python · TS</b></div>
+        <div class="kv__row"><span>fuel</span><b>caffeine &amp; curiosity</b></div>
+        <div class="kv__row"><span>available</span><b class="ok">for interesting problems</b></div>
+      </div>
+      <div class="signature">
+        <svg viewBox="0 0 320 80" width="100%" height="60" aria-hidden="true">
+          <path d="M8 56 C 24 12, 40 12, 56 56 S 88 100, 104 56 C 120 12, 136 12, 152 56 M 168 24 C 188 80, 172 64, 196 32 C 212 12, 232 24, 240 48 C 244 60, 252 60, 256 48 C 264 28, 280 20, 296 40 M 308 36 L 314 36" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span>— Agnivesh, signed in the terminal</span>
+      </div>
+    </aside>
+  </div>
+</section>
 
-            <!-- Contribution Graph -->
-            <div class="contribution-block">
-                <h3><i class="fas fa-calendar-check"></i> Contributions</h3>
-                <div class="contribution-iso-wrapper">
-                    <div class="contribution-iso">
-                        <img src="https://ghchart.rshah.org/agniveshtm" alt="GitHub Contribution Chart" class="contribution-img" loading="lazy">
-                    </div>
-                </div>
-                <a href="https://github.com/agniveshtm" target="_blank" class="contribution-link">View full profile <i class="fas fa-arrow-right"></i></a>
-            </div>
+<!-- ============== WORK ============== -->
+<section class="work" id="work">
+  <div class="section__head">
+    <span class="section__no">// 03</span>
+    <h2 class="section__title"><span class="fn">ls</span> <span class="str">~/projects</span></h2>
+    <p class="section__sub">things I&rsquo;ve built, broken, and rebuilt with intent</p>
+  </div>
 
-            <div class="github-cta">
-                <a href="https://github.com/agniveshtm" target="_blank" class="btn btn-primary">
-                    <i class="fab fa-github"></i> See All Repos
-                </a>
-            </div>
-        </div>
-    </section>
+  <div class="work__filters" role="tablist" aria-label="Project filters">
+    <button class="chip-btn is-active" data-filter="all" role="tab" aria-selected="true">all <em>./*</em></button>
+    <button class="chip-btn" data-filter="web" role="tab" aria-selected="false">web</button>
+    <button class="chip-btn" data-filter="ml" role="tab" aria-selected="false">ml / ai</button>
+    <button class="chip-btn" data-filter="cli" role="tab" aria-selected="false">cli</button>
+    <button class="chip-btn" data-filter="design" role="tab" aria-selected="false">design</button>
+    <span class="work__count" id="projCount">// 4 files</span>
+  </div>
 
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-        <div class="container">
-            <h2 class="section-title">Get In <span class="highlight">Touch</span></h2>
-            <p class="section-subtitle">Let's build something awesome together</p>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <i class="fab fa-github"></i>
-                        <div>
-                            <h4>GitHub</h4>
-                            <a href="https://github.com/agniveshtm" target="_blank">github.com/agniveshtm</a>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fab fa-linkedin-in"></i>
-                        <div>
-                            <h4>LinkedIn</h4>
-                            <a href="https://www.linkedin.com/in/agnivesh-manojkumar" target="_blank">linkedin.com/in/agnivesh-manojkumar</a>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fab fa-x-twitter"></i>
-                        <div>
-                            <h4>Twitter / X</h4>
-                            <a href="https://twitter.com/agniveshtm2724" target="_blank">@agniveshtm2724</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="contact-quote">
-                    <blockquote>
-                        "Built with curiosity, caffeine, and love."
-                    </blockquote>
-                    <p>— Agnivesh Manojkumar</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <div class="work__grid" id="workGrid"></div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <p>&copy; 2026 Agnivesh Manojkumar. Built with <i class="fas fa-heart"></i> and Django vibes.</p>
-                <div class="footer-links">
-                    <a href="https://github.com/agniveshtm" target="_blank"><i class="fab fa-github"></i></a>
-                    <a href="https://www.linkedin.com/in/agnivesh-manojkumar" target="_blank"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="https://twitter.com/agniveshtm2724" target="_blank"><i class="fab fa-x-twitter"></i></a>
-                </div>
-            </div>
-        </div>
-    </footer>
+  <a class="work__more" href="https://github.com/agniveshtm" target="_blank" rel="noopener">
+    <span>git remote -v</span>
+    <em>github.com/agniveshtm &nbsp;→</em>
+  </a>
+</section>
 
-    <script src="script.js"></script>
+<!-- ============== STACK ============== -->
+<section class="stack" id="stack">
+  <div class="section__head">
+    <span class="section__no">// 04</span>
+    <h2 class="section__title"><span class="fn">cat</span> <span class="str">stack.json</span></h2>
+    <p class="section__sub">tools, languages, and frameworks I reach for &mdash; the ones that pay rent</p>
+  </div>
+
+  <div class="stack__layout">
+
+    <div class="stack__featured">
+      <div class="feat__num">// favorite</div>
+      <h3 class="feat__title">Django &mdash; my full-stack powerhouse</h3>
+      <p class="feat__copy">
+        The framework that taught me to think in clean architecture, ORMs,
+        and the joy of a batteries-included admin. I use Django for robust,
+        scalable web applications, RESTful APIs, and anything that needs to
+        ship before Friday.
+      </p>
+      <div class="feat__meter" aria-hidden="true">
+        <span>proficiency</span>
+        <div class="bar"><i style="--w:92%"></i></div>
+        <em>92%</em>
+      </div>
+    </div>
+
+    <div class="stack__group">
+      <h4>// languages</h4>
+      <ul class="tags">
+        <li>python</li><li>javascript</li><li>typescript</li><li>html5</li><li>css3</li><li>c</li><li>java</li><li>bash</li><li>powershell</li>
+      </ul>
+    </div>
+
+    <div class="stack__group">
+      <h4>// frameworks &amp; tools</h4>
+      <ul class="tags">
+        <li>django</li><li>flask</li><li>tailwindcss</li><li>bootstrap</li><li>git</li><li>docker</li><li>kubernetes</li>
+      </ul>
+    </div>
+
+    <div class="stack__group">
+      <h4>// data &amp; ml</h4>
+      <ul class="tags">
+        <li>numpy</li><li>pandas</li><li>matplotlib</li><li>scikit-learn</li><li>mysql</li><li>mongodb</li>
+      </ul>
+    </div>
+
+    <div class="stack__group">
+      <h4>// cloud &amp; devops</h4>
+      <ul class="tags">
+        <li>digitalocean</li><li>render</li><li>linux</li><li>nginx</li>
+      </ul>
+    </div>
+
+    <div class="stack__group">
+      <h4>// design</h4>
+      <ul class="tags">
+        <li>canva</li><li>power-bi</li><li>figma</li>
+      </ul>
+    </div>
+
+    <div class="stack__group stack__group--accent">
+      <h4>// currently exploring</h4>
+      <ul class="tags tags--accent">
+        <li>generative ai</li><li>linux sysadmin</li><li>containerisation</li><li>django rest</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============== TERMINAL ============== -->
+<section class="termsec">
+  <div class="section__head">
+    <span class="section__no">// extra</span>
+    <h2 class="section__title">interactive <span class="fn">shell</span></h2>
+    <p class="section__sub">type a command. some work, some don&rsquo;t. curiosity is on the house.</p>
+  </div>
+
+  <div class="term" id="term">
+    <div class="panel__chrome">
+      <span class="dot dot--r"></span>
+      <span class="dot dot--y"></span>
+      <span class="dot dot--g"></span>
+      <span class="panel__title">bash &mdash; tty1</span>
+      <span class="panel__hint" id="termHint">type &ldquo;help&rdquo; to begin</span>
+    </div>
+    <div class="term__body" id="termBody"></div>
+    <div class="term__line">
+      <span class="term__ps">agnivesh@portfolio:~$</span>
+      <input id="termInput" class="term__input" type="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" />
+    </div>
+  </div>
+</section>
+
+<!-- ============== CONTACT ============== -->
+<section class="contact" id="contact">
+  <div class="section__head">
+    <span class="section__no">// 05</span>
+    <h2 class="section__title"><span class="fn">./say-hello.sh</span></h2>
+    <p class="section__sub">let&rsquo;s build something the internet hasn&rsquo;t seen before</p>
+  </div>
+
+  <div class="contact__grid">
+    <a class="contact__card" href="https://github.com/agniveshtm" target="_blank" rel="noopener">
+      <span class="contact__no">01</span>
+      <h4>github</h4>
+      <p>github.com/agniveshtm</p>
+      <span class="contact__arrow">→</span>
+    </a>
+    <a class="contact__card" href="https://www.linkedin.com/in/agnivesh-manojkumar" target="_blank" rel="noopener">
+      <span class="contact__no">02</span>
+      <h4>linkedin</h4>
+      <p>in/agnivesh-manojkumar</p>
+      <span class="contact__arrow">→</span>
+    </a>
+    <a class="contact__card" href="https://twitter.com/agniveshtm2724" target="_blank" rel="noopener">
+      <span class="contact__no">03</span>
+      <h4>twitter / x</h4>
+      <p>@agniveshtm2724</p>
+      <span class="contact__arrow">→</span>
+    </a>
+    <a class="contact__card contact__card--cta" href="https://mail.google.com/mail/?view=cm&fs=1&to=agniveshtm2724@gmail.com">
+      <span class="contact__no">04</span>
+      <h4>start a project</h4>
+      <p>say hello &amp; tell me what you&rsquo;re building</p>
+      <span class="contact__arrow">→</span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ============== FOOTER ============== -->
+<footer class="foot">
+  <div class="foot__top">
+    <div>
+      <h5>// quote.txt</h5>
+      <blockquote>
+        &ldquo;Built with curiosity, caffeine, and love.&rdquo;
+        <span>— Agnivesh Manojkumar</span>
+      </blockquote>
+    </div>
+    <div class="foot__sig">
+      <div class="ascii" aria-hidden="true">
+  /\_____/\
+ ( ^o^ ^o^ )
+  &gt;   &lt;
+ /       \
+</div>
+    </div>
+  </div>
+  <div class="foot__bot">
+    <span>© 2026 Agnivesh Manojkumar</span>
+    <span class="foot__mid">·</span>
+    <span>hand-rolled in HTML, CSS &amp; JS</span>
+    <span class="foot__mid">·</span>
+    <span>no frameworks were harmed</span>
+    <a class="foot__toplink" href="#home">back to top ↑</a>
+  </div>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>

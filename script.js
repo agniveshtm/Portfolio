@@ -1,972 +1,336 @@
-// ===================== Token Management =====================
-const TOKEN_STORAGE_KEY = 'gh_pat';
-
-function getTokenFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const pat = params.get('pat');
-    if (pat) {
-        localStorage.setItem(TOKEN_STORAGE_KEY, pat);
-        window.history.replaceState({}, '', window.location.pathname);
-    }
-    return pat || null;
-}
-
-function getStoredToken() {
-    return getTokenFromURL() || localStorage.getItem(TOKEN_STORAGE_KEY);
-}
-
-// ===================== IndexedDB GraphQL Cache =====================
-const DB_NAME = 'PortfolioGraphQLCache';
-const DB_VERSION = 1;
-const STORE_NAME = 'graphql_responses';
-
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = () => {
-            const db = request.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                const store = db.createObjectStore(STORE_NAME, { keyPath: 'queryKey' });
-                store.createIndex('timestamp', 'timestamp', { unique: false });
-            }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-const LOCAL_STORAGE_KEY = 'portfolio_repos_cache';
-
-async function getCachedResponse(queryKey, ttlMs = 5 * 60 * 1000) {
-    const db = await openDB();
-    return new Promise((resolve) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
-        const request = store.get(queryKey);
-        request.onsuccess = () => {
-            const entry = request.result;
-            if (entry && entry.data) {
-                const age = Date.now() - entry.timestamp;
-                resolve({
-                    data: entry.data,
-                    timestamp: entry.timestamp,
-                    fresh: age < ttlMs,
-                });
-            } else {
-                resolve(null);
-            }
-        };
-        request.onerror = () => resolve(null);
-    });
-}
-
-function getCachedFromStorage() {
-    try {
-        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (!raw) return null;
-        const entry = JSON.parse(raw);
-        if (entry && entry.data && entry.timestamp) {
-            return { data: entry.data, timestamp: entry.timestamp, fresh: true };
-        }
-    } catch {}
-    return null;
-}
-
-function saveCacheToStorage(data) {
-    try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
-            data,
-            timestamp: Date.now(),
-        }));
-    } catch {}
-}
-
-async function setCachedResponse(queryKey, data) {
-    const db = await openDB();
-    saveCacheToStorage(data);
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        const store = tx.objectStore(STORE_NAME);
-        store.put({ queryKey, data, timestamp: Date.now() });
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-    });
-}
-
-// ===================== GitHub GraphQL API Client =====================
-const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
-
-function isRateLimited(response) {
-    return response.status === 403 || response.status === 429;
-}
-
-function getRateLimitInfo(response) {
-    return {
-        remaining: parseInt(response.headers.get('x-ratelimit-remaining') || '0', 10),
-        limit: parseInt(response.headers.get('x-ratelimit-limit') || '0', 10),
-        reset: parseInt(response.headers.get('x-ratelimit-reset') || '0', 10) * 1000,
-    };
-}
-
-async function graphqlRequest(query, variables = {}) {
-    const token = getStoredToken();
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(GITHUB_GRAPHQL_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ query, variables })
-    });
-
-    const rateInfo = getRateLimitInfo(response);
-
-    if (isRateLimited(response)) {
-        const resetIn = Math.max(0, Math.ceil((rateInfo.reset - Date.now()) / 60000));
-        const err = new Error('RATE_LIMITED');
-        err.resetIn = resetIn;
-        err.rateInfo = rateInfo;
-        throw err;
-    }
-
-    if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`GitHub API error ${response.status}: ${errText}`);
-    }
-
-    const result = await response.json();
-    if (result.errors) {
-        throw new Error(`GraphQL error: ${result.errors.map(e => e.message).join(', ')}`);
-    }
-    return result.data;
-}
-
-// ===================== GraphQL Queries =====================
-const LATEST_RELEASE_QUERY = `
-    query($owner: String!, $repo: String!) {
-        repository(owner: $owner, name: $repo) {
-            latestRelease {
-                tagName
-                name
-                publishedAt
-            }
-        }
-    }
-`;
-
-const USER_REPOS_QUERY = `
-    query($login: String!, $cursor: String) {
-        user(login: $login) {
-            repositories(
-                privacy: PUBLIC
-                first: 100
-                after: $cursor
-                orderBy: { field: UPDATED_AT, direction: DESC }
-            ) {
-                pageInfo { hasNextPage endCursor }
-                totalCount
-                nodes {
-                    name
-                    nameWithOwner
-                    description
-                    url
-                    homepageUrl
-                    createdAt
-                    updatedAt
-                    pushedAt
-                    stargazerCount
-                    forkCount
-                    isArchived
-                    isFork
-                    primaryLanguage { name color }
-                    languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
-                        edges { size node { name color } }
-                    }
-                    latestRelease { tagName }
-                    repositoryTopics(first: 20) {
-                        nodes { topic { name } }
-                    }
-                }
-            }
-            followers { totalCount }
-        }
-    }
-`;
-
-// ===================== Repo Metadata Overrides =====================
-const REPO_OVERRIDES = {
-    'todo-tui': {
-        icon: 'fas fa-terminal',
-        customDesc: 'A feature-rich, keyboard-driven TUI todo app built with Python & Textual',
-        pinned: true,
-        featured: true,
-    },
-    'Carbon_Scope': {
-        icon: 'fas fa-leaf',
-        customDesc: 'Carbon footprint analysis and environmental impact tracking tool',
-    },
-    'SCHOOLARTSPLANNER': {
-        icon: 'fas fa-school',
-        customDesc: 'School arts festival management system — events, participants, winners & certificates',
-    },
-    'stock-analysis': {
-        icon: 'fas fa-chart-line',
-        customDesc: 'Stock market analysis with performance-optimized Cython processing',
-    },
-    'DJANGO': {
-        icon: 'fab fa-python',
-        customDesc: 'Full-stack web applications built with Django',
-    },
-};
-
-// ===================== RepoManager =====================
-const RepoManager = {
-    cacheKey: 'allRepos_agniveshtm',
-    cacheTTL: 24 * 60 * 60 * 1000, // 24 hours
-    refreshInterval: 12 * 60 * 60 * 1000,
-    _timer: null,
-    _repos: [],
-    _sort: 'stars',
-    _page: 1,
-    perPage: 6,
-
-    init() {
-        this.grid = document.getElementById('reposGrid');
-        this.status = document.getElementById('reposStatus');
-        if (!this.grid) return;
-
-        this.bindFilters();
-        this.load();
-        this.startAutoRefresh();
-    },
-
-    bindFilters() {
-        document.querySelectorAll('.filter-btn[data-sort]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn[data-sort]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this._sort = btn.dataset.sort;
-                this._page = 1;
-                this.render();
-            });
-        });
-    },
-
-    async load() {
-        try {
-            const cached = await getCachedResponse(this.cacheKey, this.cacheTTL);
-            if (cached) {
-                this._repos = cached.data;
-                this._lastFetched = cached.timestamp;
-                this.render();
-                this.fetchFresh();
-                return;
-            }
-        } catch {}
-
-        const lsCache = getCachedFromStorage();
-        if (lsCache) {
-            this._repos = lsCache.data;
-            this._lastFetched = lsCache.timestamp;
-            this.render();
-            this.fetchFresh();
-            return;
-        }
-
-        await this.fetchFresh();
-    },
-
-    async fetchFresh() {
-        try {
-            const allRepos = [];
-            let cursor = null;
-            let totalCount = 0;
-            let followers = 0;
-
-            do {
-                const data = await graphqlRequest(USER_REPOS_QUERY, { login: 'agniveshtm', cursor });
-                const user = data.user;
-                if (!user) break;
-
-                if (cursor === null) {
-                    totalCount = user.repositories.totalCount;
-                    followers = user.followers.totalCount;
-                }
-
-                const repos = user.repositories.nodes.filter(r => !r.isFork && !r.isArchived);
-                allRepos.push(...repos);
-                cursor = user.repositories.pageInfo.hasNextPage ? user.repositories.pageInfo.endCursor : null;
-            } while (cursor);
-
-            this._repos = allRepos;
-            this._followers = followers;
-            this._totalCount = totalCount;
-            this._lastFetched = Date.now();
-
-            await setCachedResponse(this.cacheKey, allRepos);
-            this.render();
-            this.updateStats(totalCount, followers, allRepos);
-            this.renderLanguages(allRepos);
-            this.fetchRecentActivity();
-        } catch (err) {
-            console.warn('[RepoManager] GraphQL failed, trying REST fallback:', err.message);
-
-            try {
-                const { repos, followers, totalCount } = await fetchReposViaREST('agniveshtm');
-                this._repos = repos;
-                this._followers = followers;
-                this._totalCount = totalCount;
-                this._lastFetched = Date.now();
-                await setCachedResponse(this.cacheKey, repos);
-                this.render();
-                this.updateStats(totalCount, followers, repos);
-                return;
-            } catch (restErr) {
-                console.warn('[RepoManager] REST fallback also failed:', restErr.message);
-            }
-
-            if (err.message === 'RATE_LIMITED') {
-                this._rateLimitError = err;
-                if (this._repos.length > 0) {
-                    this.renderRateLimitBanner(err);
-                } else {
-                    const lsCache = getCachedFromStorage();
-                    if (lsCache) {
-                        this._repos = lsCache.data;
-                        this._lastFetched = lsCache.timestamp;
-                        this.render();
-                        this.renderRateLimitBanner(err);
-                    } else {
-                        this.renderRateLimit(err);
-                    }
-                }
-            } else if (this._repos.length === 0) {
-                this.renderError(err.message);
-            }
-        }
-    },
-
-    updateStats(totalCount, followers, repos) {
-        const totalStars = repos.reduce((sum, r) => sum + r.stargazerCount, 0);
-        const statCards = document.querySelectorAll('.stat-card');
-        if (statCards.length >= 3) {
-            const repoEl = statCards[0].querySelector('.stat-number');
-            const followersEl = statCards[1].querySelector('.stat-number');
-            const starsEl = statCards[2].querySelector('.stat-number');
-            if (repoEl) { repoEl.dataset.target = totalCount; repoEl.textContent = totalCount; }
-            if (followersEl) { followersEl.dataset.target = followers; followersEl.textContent = followers; }
-            if (starsEl) { starsEl.dataset.target = totalStars; starsEl.textContent = totalStars; }
-        }
-    },
-
-    getSorted() {
-        const repos = [...this._repos];
-        switch (this._sort) {
-            case 'stars':
-                return repos.sort((a, b) => b.stargazerCount - a.stargazerCount);
-            case 'updated':
-                return repos.sort((a, b) => new Date(b.pushedAt) - new Date(a.pushedAt));
-            case 'name':
-                return repos.sort((a, b) => a.name.localeCompare(b.name));
-            default:
-                return repos;
-        }
-    },
-
-    render() {
-        if (!this.grid) return;
-
-        const sorted = this.getSorted();
-        if (sorted.length === 0) {
-            this.grid.innerHTML = `
-                <div class="repos-empty">
-                    <i class="fas fa-box-open"></i>
-                    <p>No public repos found</p>
-                </div>`;
-            return;
-        }
-
-        const totalPages = Math.ceil(sorted.length / this.perPage);
-        if (this._page > totalPages) this._page = totalPages;
-        const start = (this._page - 1) * this.perPage;
-        const pageRepos = sorted.slice(start, start + this.perPage);
-
-        this.grid.innerHTML = pageRepos.map((repo, i) => this.cardHTML(repo, i)).join('');
-
-        const existingPaginator = document.querySelector('.repos-paginator');
-        if (existingPaginator) existingPaginator.remove();
-
-        if (totalPages > 1) {
-            const paginator = document.createElement('div');
-            paginator.className = 'repos-paginator';
-            paginator.innerHTML = `
-                <button class="page-btn" ${this._page <= 1 ? 'disabled' : ''} onclick="RepoManager.goPage(${this._page - 1})"><i class="fas fa-chevron-left"></i></button>
-                <span class="page-info">${this._page} / ${totalPages}</span>
-                <button class="page-btn" ${this._page >= totalPages ? 'disabled' : ''} onclick="RepoManager.goPage(${this._page + 1})"><i class="fas fa-chevron-right"></i></button>`;
-            this.grid.parentElement.appendChild(paginator);
-        }
-
-        this.updateStatus();
-
-        this.grid.querySelectorAll('.project-card').forEach((card, i) => {
-            card.classList.add('reveal');
-            card.style.transitionDelay = `${i * 50}ms`;
-            observer.observe(card);
-        });
-    },
-
-    goPage(page) {
-        this._page = page;
-        this.render();
-        document.getElementById('reposGrid')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    },
-
-    cardHTML(repo, index) {
-        const override = REPO_OVERRIDES[repo.name] || {};
-        const icon = override.icon || this.langIcon(repo.primaryLanguage?.name);
-        const desc = override.customDesc || repo.description || '';
-        const lang = repo.primaryLanguage?.name || '';
-        const langColor = repo.primaryLanguage?.color || '#6e7681';
-        const stars = repo.stargazerCount;
-        const topics = repo.repositoryTopics?.nodes?.map(t => t.topic.name) || [];
-        const updated = this.timeAgo(new Date(repo.pushedAt));
-        const homepage = repo.homepageUrl;
-        const tag = repo.latestRelease?.tagName || '';
-        const displayTopics = topics.filter(t => !['python', 'javascript', 'html', 'css'].includes(t)).slice(0, 3);
-
-        return `
-            <div class="project-card">
-                <div class="project-card-header">
-                    <div class="project-card-title-row">
-                        <i class="${icon} project-icon${lang === 'Python' ? ' django-icon' : ''}"></i>
-                        <div>
-                            <h3>${repo.name}${tag ? ` <span class="version-tag">${tag}</span>` : ''}</h3>
-                            <span class="project-type">${lang ? lang : ''}${lang && this.categoryFromTopics(topics) !== 'Project' ? ' · ' + this.categoryFromTopics(topics) : ''}</span>
-                        </div>
-                    </div>
-                    <div class="project-card-links">
-                        ${stars > 0 ? `<span class="repo-stars"><i class="fas fa-star"></i> ${stars}</span>` : ''}
-                        <a href="${repo.url}" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                    </div>
-                </div>
-                ${desc ? `<p class="project-desc">${this.escapeHTML(desc)}</p>` : ''}
-                ${homepage ? `<a href="${homepage}" target="_blank" class="repo-homepage"><i class="fas fa-external-link-alt"></i> ${this.cleanURL(homepage)}</a>` : ''}
-                ${displayTopics.length > 0 ? `<div class="repo-topics">${displayTopics.map(t => `<span>${t}</span>`).join('')}</div>` : ''}
-                <div class="repo-footer">
-                    <div class="repo-meta">
-                        ${lang ? `<span><span class="lang-dot" style="background:${langColor}"></span> ${lang}</span>` : ''}
-                        ${repo.forkCount > 0 ? `<span><i class="fas fa-code-branch"></i> ${repo.forkCount}</span>` : ''}
-                    </div>
-                    <span class="repo-updated">${updated}</span>
-                </div>
-            </div>`;
-    },
-
-    langIcon(lang) {
-        const map = {
-            'Python': 'fab fa-python',
-            'JavaScript': 'fab fa-js',
-            'HTML': 'fab fa-html5',
-            'CSS': 'fab fa-css3-alt',
-            'Java': 'fab fa-java',
-            'C': 'fas fa-c',
-            'C++': 'fas fa-c',
-            'Shell': 'fas fa-terminal',
-            'Dockerfile': 'fab fa-docker',
-            'TypeScript': 'fas fa-code',
-            'Ruby': 'fas fa-gem',
-            'Rust': 'fas fa-cog',
-            'Go': 'fas fa-server',
-            'PHP': 'fab fa-php',
-            'Vue': 'fab fa-vuejs',
-        };
-        return map[lang] || 'fas fa-code';
-    },
-
-    categoryFromTopics(topics) {
-        const t = topics.map(x => x.toLowerCase());
-        if (t.includes('django') || t.includes('web')) return 'Full-Stack Web';
-        if (t.includes('machine-learning') || t.includes('ml') || t.includes('data-science')) return 'ML & Data';
-        if (t.includes('cli') || t.includes('tui') || t.includes('terminal')) return 'CLI / TUI';
-        if (t.includes('devops') || t.includes('docker') || t.includes('kubernetes')) return 'DevOps';
-        if (t.includes('python')) return 'Python';
-        return 'Project';
-    },
-
-    timeAgo(date) {
-        const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-        if (seconds < 60) return 'just now';
-        const minutes = Math.floor(seconds / 60);
-        if (minutes < 60) return `${minutes}m ago`;
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `${hours}h ago`;
-        const days = Math.floor(hours / 24);
-        if (days < 30) return `${days}d ago`;
-        const months = Math.floor(days / 30);
-        if (months < 12) return `${months}mo ago`;
-        return `${Math.floor(months / 12)}y ago`;
-    },
-
-    cleanURL(url) {
-        try { return new URL(url).hostname; } catch { return url; }
-    },
-
-    escapeHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    },
-
-    updateStatus() {
-        if (!this.status) return;
-        const count = this._repos.length;
-        const countEl = this.status.querySelector('.repos-count');
-        const updatedEl = this.status.querySelector('.repos-updated');
-        if (countEl) countEl.textContent = `${count} repo${count !== 1 ? 's' : ''}`;
-        if (updatedEl && this._lastFetched) {
-            updatedEl.textContent = `live ${this.timeAgo(new Date(this._lastFetched))}`;
-        }
-    },
-
-    renderError(msg) {
-        if (!this.grid) return;
-        this.grid.innerHTML = `
-            <div class="repos-error">
-                <p><i class="fas fa-exclamation-triangle"></i> Failed to load repos: ${this.escapeHTML(msg)}</p>
-                <button onclick="RepoManager.fetchFresh()"><i class="fas fa-redo"></i> Retry</button>
-            </div>`;
-    },
-
-    renderRateLimit(err) {
-        if (!this.grid) return;
-        this.grid.innerHTML = `
-            <div class="repos-error rate-limited">
-                <i class="fas fa-clock"></i>
-                <p><strong>Rate limit reached</strong></p>
-                <p class="rate-limit-detail">Data refreshes in ~${err.resetIn} min. Cached results are shown below.</p>
-                <button class="retry-btn" onclick="RepoManager.fetchFresh()"><i class="fas fa-redo"></i> Retry</button>
-            </div>`;
-    },
-
-    renderRateLimitBanner(err) {
-        const existing = document.querySelector('.rate-limit-banner');
-        if (existing) return;
-        const banner = document.createElement('div');
-        banner.className = 'rate-limit-banner';
-        banner.innerHTML = `
-            <i class="fas fa-exclamation-circle"></i>
-            <span>Rate limited — resets in ~${err.resetIn}m</span>
-            <button onclick="this.parentElement.remove()" class="banner-close">&times;</button>`;
-        this.grid.parentElement.insertBefore(banner, this.grid);
-    },
-
-    startAutoRefresh() {
-        this._timer = setInterval(() => this.fetchFresh(), this.refreshInterval);
-    },
-
-    destroy() {
-        if (this._timer) clearInterval(this._timer);
-    },
-
-    renderLanguages(repos) {
-        const langMap = {};
-        repos.forEach(repo => {
-            const edges = repo.languages?.edges || [];
-            edges.forEach(edge => {
-                const name = edge.node.name;
-                if (!langMap[name]) langMap[name] = { size: 0, color: edge.node.color };
-                langMap[name].size += edge.size;
-            });
-        });
-
-        const total = Object.values(langMap).reduce((s, l) => s + l.size, 0);
-        if (total === 0) return;
-
-        const sorted = Object.entries(langMap)
-            .sort((a, b) => b[1].size - a[1].size)
-            .slice(0, 8);
-
-        const container = document.getElementById('langBars');
-        if (!container) return;
-
-        container.innerHTML = sorted.map(([name, { color, size }]) => {
-            const pct = ((size / total) * 100).toFixed(1);
-            return `<div class="lang-row">
-                <div class="lang-row-header">
-                    <span class="lang-row-name"><span class="lang-row-dot" style="background:${color}"></span>${name}</span>
-                    <span class="lang-row-pct">${pct}%</span>
-                </div>
-                <div class="lang-row-track">
-                    <div class="lang-row-fill" style="background:${color}" data-width="${pct}"></div>
-                </div>
-            </div>`;
-        }).join('');
-
-        requestAnimationFrame(() => {
-            container.querySelectorAll('.lang-row-fill').forEach(fill => {
-                fill.style.width = fill.dataset.width + '%';
-            });
-        });
-    },
-
-    async fetchRecentActivity() {
-        const list = document.getElementById('activityList');
-        if (!list) return;
-
-        const cacheKey = 'recentEvents_REST_agniveshtm';
-        try {
-            const cached = await getCachedResponse(cacheKey, 10 * 60 * 1000);
-            if (cached) {
-                this.renderActivity(cached.data);
-                return;
-            }
-        } catch {}
-
-        try {
-            const token = getStoredToken();
-            const url = 'https://api.github.com/users/agniveshtm/events/public?per_page=30';
-            const headers = { 'Accept': 'application/vnd.github.v3+json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            const res = await fetch(url, { headers });
-
-            if (res.status === 403 || res.status === 429) {
-                const resetIn = Math.max(0, Math.ceil((parseInt(res.headers.get('x-ratelimit-reset') || '0', 10) * 1000 - Date.now()) / 60000));
-                throw new Error(`RATE_LIMITED:${resetIn}`);
-            }
-
-            if (!res.ok) throw new Error(`REST API ${res.status}`);
-
-            const events = await res.json();
-            if (!Array.isArray(events) || events.length === 0) {
-                list.innerHTML = `<div class="activity-empty">No recent public activity</div>`;
-                return;
-            }
-            await setCachedResponse(cacheKey, events);
-            this.renderActivity(events);
-        } catch (err) {
-            console.warn('[Activity] Fetch failed:', err.message);
-            if (err.message.startsWith('RATE_LIMITED')) {
-                const resetIn = err.message.split(':')[1] || '?';
-                list.innerHTML = `<div class="activity-empty"><i class="fas fa-clock"></i> Rate limited — resets in ~${resetIn}m</div>`;
-            } else {
-                list.innerHTML = `<div class="activity-empty"><i class="fas fa-exclamation-circle"></i> Could not load activity</div>`;
-            }
-        }
-    },
-
-    renderActivity(events) {
-        const list = document.getElementById('activityList');
-        if (!list) return;
-
-        if (!events.length) {
-            list.innerHTML = `<div class="activity-empty">No recent public activity</div>`;
-            return;
-        }
-
-        list.innerHTML = events.slice(0, 10).map(ev => {
-            const { icon, iconClass, text } = this.formatEvent(ev);
-            return `<div class="activity-item">
-                <div class="activity-icon ${iconClass}"><i class="${icon}"></i></div>
-                <div class="activity-body">
-                    <p>${text}</p>
-                    <div class="activity-time">${this.timeAgo(new Date(ev.created_at))}</div>
-                </div>
-            </div>`;
-        }).join('');
-    },
-
-    formatEvent(ev) {
-        const repo = ev.repo?.name || '';
-        const repoLink = `<a href="https://github.com/${repo}" target="_blank">${repo.split('/').pop()}</a>`;
-        const type = ev.type;
-
-        switch (type) {
-            case 'PushEvent': {
-                const commits = ev.payload?.commits || [];
-                const msg = commits[0]?.message || 'pushed commits';
-                const count = commits.length;
-                return { icon: 'fas fa-code-commit', iconClass: 'push', text: `Pushed ${count > 1 ? `<strong>${count} commits</strong>` : `<strong>${this.escapeHTML(msg.split('\n')[0])}</strong>`} to ${repoLink}` };
-            }
-            case 'CreateEvent': {
-                const refType = ev.payload?.ref_type || 'repository';
-                const ref = ev.payload?.ref;
-                return { icon: 'fas fa-plus', iconClass: 'create', text: `Created ${ref ? refType + ' <strong>' + this.escapeHTML(ref) + '</strong>' : refType} on ${repoLink}` };
-            }
-            case 'DeleteEvent': {
-                return { icon: 'fas fa-trash', iconClass: 'other', text: `Deleted ${ev.payload?.ref_type || 'ref'} <strong>${this.escapeHTML(ev.payload?.ref || '')}</strong> on ${repoLink}` };
-            }
-            case 'ReleaseEvent': {
-                const tag = ev.payload?.release?.tag_name || '';
-                return { icon: 'fas fa-tag', iconClass: 'star', text: `Released <strong>${this.escapeHTML(tag)}</strong> on ${repoLink}` };
-            }
-            case 'WatchEvent':
-                return { icon: 'fas fa-star', iconClass: 'star', text: `Starred ${repoLink}` };
-            case 'ForkEvent':
-                return { icon: 'fas fa-code-fork', iconClass: 'fork', text: `Forked ${repoLink}` };
-            case 'IssuesEvent': {
-                const action = ev.payload?.action || 'opened';
-                return { icon: 'fas fa-circle-dot', iconClass: 'other', text: `${action} issue on ${repoLink}` };
-            }
-            case 'PullRequestEvent': {
-                const action = ev.payload?.action || 'opened';
-                return { icon: 'fas fa-code-pull-request', iconClass: 'create', text: `${action} PR on ${repoLink}` };
-            }
-            case 'IssueCommentEvent':
-                return { icon: 'fas fa-comment', iconClass: 'other', text: `Commented on issue in ${repoLink}` };
-            default:
-                return { icon: 'fas fa-circle', iconClass: 'other', text: `${type} on ${repoLink}` };
-        }
-    },
-};
-
-// ===================== Release Fetcher =====================
-async function fetchLatestRelease() {
-    const repoFull = 'agniveshtm/todo-tui';
-    const [owner, repo] = repoFull.split('/');
-    const queryKey = `latestRelease_${repoFull}`;
-
-    try {
-        const cached = await getCachedResponse(queryKey, 5 * 60 * 1000);
-        const data = cached ? cached.data : await (async () => {
-            try {
-                const d = await graphqlRequest(LATEST_RELEASE_QUERY, { owner, repo });
-                await setCachedResponse(queryKey, d);
-                return d;
-            } catch {
-                const d = await fetchReleaseViaREST(owner, repo);
-                await setCachedResponse(queryKey, d);
-                return d;
-            }
-        })();
-
-        if (data?.repository?.latestRelease) {
-            const tagName = data.repository.latestRelease.tagName;
-            document.querySelectorAll('.version-tag[data-repo="agniveshtm/todo-tui"]').forEach(el => {
-                el.textContent = tagName;
-            });
-            const releaseVersionEl = document.querySelector('.release-version');
-            if (releaseVersionEl) releaseVersionEl.textContent = tagName;
-        }
-    } catch (err) {
-        console.warn('[Fetch] Failed to fetch latest release:', err.message);
-    }
-}
-
-// ===================== Typing Effect =====================
-function initTypingEffect() {
-    const el = document.getElementById('typingText');
-    if (!el) return;
-
-    const phrases = [
-        'CS Student · Vibe-Coder · ML & Web Developer',
-        'Django Enthusiast · Linux Explorer',
-        'Building AI-Powered Web Apps',
-        'Turning Ideas into Code ⚡'
-    ];
-
-    let phraseIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let isPaused = false;
-
-    function tick() {
-        const current = phrases[phraseIndex];
-
-        if (isPaused) {
-            isPaused = false;
-            isDeleting = true;
-            setTimeout(tick, 50);
-            return;
-        }
-
-        if (!isDeleting) {
-            el.textContent = current.slice(0, charIndex + 1);
-            charIndex++;
-
-            if (charIndex === current.length) {
-                isPaused = true;
-                setTimeout(tick, 2000);
-                return;
-            }
-            setTimeout(tick, 50 + Math.random() * 40);
-        } else {
-            el.textContent = current.slice(0, charIndex - 1);
-            charIndex--;
-
-            if (charIndex === 0) {
-                isDeleting = false;
-                phraseIndex = (phraseIndex + 1) % phrases.length;
-                setTimeout(tick, 400);
-                return;
-            }
-            setTimeout(tick, 25);
-        }
-    }
-
-    setTimeout(tick, 800);
-}
-
-// ===================== Counter Animation =====================
-function animateCounters() {
-    const counters = document.querySelectorAll('.stat-number[data-target]');
-    counters.forEach(counter => {
-        if (counter.dataset.animated) return;
-
-        const target = parseInt(counter.dataset.target, 10);
-        if (isNaN(target)) return;
-
-        counter.dataset.animated = 'true';
-        const duration = 1200;
-        const start = performance.now();
-
-        function update(now) {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            counter.textContent = Math.round(eased * target);
-
-            if (progress < 1) {
-                requestAnimationFrame(update);
-            } else {
-                counter.textContent = target;
-            }
-        }
-
-        requestAnimationFrame(update);
-    });
-}
-
-// ===================== Mobile Navigation Toggle =====================
-const navToggle = document.getElementById('navToggle');
-const navMenu = document.getElementById('navMenu');
-const navLinks = document.querySelectorAll('.nav-link');
-
-navToggle.addEventListener('click', () => {
-    const isActive = navToggle.classList.toggle('active');
-    navMenu.classList.toggle('active');
-    navToggle.setAttribute('aria-expanded', isActive);
-});
-
-navToggle.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        navToggle.click();
-    }
-});
-
-navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        navToggle.classList.remove('active');
-        navMenu.classList.remove('active');
-        navToggle.setAttribute('aria-expanded', 'false');
-    });
-});
-
-// ===================== Navbar Scroll State =====================
-const navbar = document.querySelector('.navbar');
-
-function updateNavbar() {
-    navbar.classList.toggle('scrolled', window.scrollY > 20);
-}
-
-window.addEventListener('scroll', updateNavbar, { passive: true });
-
-// ===================== Active Navigation Link on Scroll =====================
-const sections = document.querySelectorAll('section[id]');
-
-function updateActiveLink() {
-    let current = '';
-    const scrollY = window.scrollY + 100;
-
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.offsetHeight;
-
-        if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
-            current = section.getAttribute('id');
-        }
-    });
-
-    navLinks.forEach(link => {
-        link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
-    });
-}
-
-window.addEventListener('scroll', updateActiveLink, { passive: true });
-
-// ===================== Scroll Indicator =====================
-const scrollIndicator = document.querySelector('.scroll-indicator');
-
-if (scrollIndicator) {
-    window.addEventListener('scroll', () => {
-        scrollIndicator.style.opacity = window.scrollY > window.innerHeight * 0.8 ? '0' : '1';
-    }, { passive: true });
-}
-
-// ===================== Intersection Observer =====================
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -60px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-
-            if (entry.target.closest('.github-stats')) {
-                animateCounters();
-            }
-
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
-
-const animatedElements = document.querySelectorAll(
-    '.about-card, .project-featured, .skill-category, .stat-card, .contact-item, .stack-highlight'
-);
-
-animatedElements.forEach(el => {
-    el.classList.add('reveal');
-    observer.observe(el);
-});
-
-function staggerChildren(parentSelector) {
-    const parents = document.querySelectorAll(parentSelector);
-    parents.forEach(parent => {
-        const children = parent.querySelectorAll('.about-card, .skill-category');
-        children.forEach((child, i) => {
-            child.style.transitionDelay = `${i * 80}ms`;
-            child.classList.add('reveal-stagger');
-            observer.observe(child);
-        });
-    });
-}
-
-staggerChildren('.about-grid');
-staggerChildren('.skills-grid');
-
-// ===================== Parallax Effect =====================
-const heroBg = document.querySelector('.hero-bg');
-
-if (heroBg && window.innerWidth > 768) {
-    window.addEventListener('mousemove', (e) => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 20;
-        const y = (e.clientY / window.innerHeight - 0.5) * 20;
-        heroBg.style.transform = `translate(${x}px, ${y}px)`;
-    }, { passive: true });
-}
-
-// ===================== Init =====================
-document.addEventListener('DOMContentLoaded', () => {
-    initTypingEffect();
-    fetchLatestRelease();
-    RepoManager.init();
-    IsometricContrib.init();
-    updateNavbar();
-    updateActiveLink();
-});
+/* =====================================================================
+   AGNIVESH M. — TERMINAL POETRY · interactions
+      ===================================================================== */
+
+      (() => {
+        'use strict';
+
+          /* ---------- BOOT SEQUENCE ---------- */
+            const bootEl   = document.getElementById('boot');
+              const bootLines = document.getElementById('bootLines');
+                const bootBar   = document.getElementById('bootBar');
+                  const bootPct   = document.getElementById('bootPct');
+
+                    const bootMsgs = [
+                        '> initializing portfolio.sh …',
+                            '> mounting /home/agnivesh',
+                                '> loading typeface: Fraunces · JetBrains Mono · Geist',
+                                    '> compiling sass → css',
+                                        '> linking dependencies … ok',
+                                            '> starting watchers',
+                                                '> booting neural net … 64 layers',
+                                                    '> connection established',
+                                                        '> ready.'
+                                                          ];
+
+                                                            let bi = 0, bp = 0;
+                                                              const tick = () => {
+                                                                  if (bi < bootMsgs.length) {
+                                                                        bootLines.textContent += (bi > 0 ? '\n' : '') + bootMsgs[bi];
+                                                                              bi++;
+                                                                                  }
+                                                                                      bp = Math.min(100, bp + 7 + Math.random() * 9);
+                                                                                          bootBar.style.width = bp + '%';
+                                                                                              bootPct.textContent = Math.floor(bp) + '%';
+
+                                                                                                  if (bp >= 100) {
+                                                                                                        setTimeout(() => {
+                                                                                                                bootEl.classList.add('is-done');
+                                                                                                                        document.body.style.overflow = '';
+                                                                                                                                setTimeout(() => bootEl.remove(), 900);
+                                                                                                                                      }, 320);
+                                                                                                                                            return;
+                                                                                                                                                }
+                                                                                                                                                    setTimeout(tick, 110 + Math.random() * 140);
+                                                                                                                                                      };
+                                                                                                                                                        document.body.style.overflow = 'hidden';
+                                                                                                                                                          setTimeout(tick, 220);
+
+                                                                                                                                                            /* ---------- CLOCK (top right) ---------- */
+                                                                                                                                                              const clockEl = document.getElementById('clock');
+                                                                                                                                                                const tickClock = () => {
+                                                                                                                                                                    const d = new Date();
+                                                                                                                                                                        const hh = String(d.getHours()).padStart(2, '0');
+                                                                                                                                                                            const mm = String(d.getMinutes()).padStart(2, '0');
+                                                                                                                                                                                const ss = String(d.getSeconds()).padStart(2, '0');
+                                                                                                                                                                                    clockEl.textContent = `${hh}:${mm}:${ss}`;
+                                                                                                                                                                                      };
+                                                                                                                                                                                        tickClock();
+                                                                                                                                                                                          setInterval(tickClock, 1000);
+
+                                                                                                                                                                                            /* ---------- UPTIME (since 2024) ---------- */
+                                                                                                                                                                                              const upEl = document.getElementById('uptime');
+                                                                                                                                                                                                const startYear = 2024;
+                                                                                                                                                                                                  const updateUptime = () => {
+                                                                                                                                                                                                      const now = new Date();
+                                                                                                                                                                                                          const past = new Date(startYear, 0, 1);
+                                                                                                                                                                                                              const diff = now - past;
+                                                                                                                                                                                                                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                                                                                                                                                                                                                      const yrs = Math.floor(days / 365);
+                                                                                                                                                                                                                          const remD = days - yrs * 365;
+                                                                                                                                                                                                                              upEl.textContent = `${yrs}y ${remD}d`;
+                                                                                                                                                                                                                                };
+                                                                                                                                                                                                                                  updateUptime();
+                                                                                                                                                                                                                                    setInterval(updateUptime, 60000);
+
+                                                                                                                                                                                                                                      /* ---------- CUSTOM CURSOR ---------- */
+                                                                                                                                                                                                                                        const cursor = document.getElementById('cursor');
+                                                                                                                                                                                                                                          const dot = cursor.querySelector('.cursor__dot');
+                                                                                                                                                                                                                                            const ring = cursor.querySelector('.cursor__ring');
+                                                                                                                                                                                                                                              let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+                                                                                                                                                                                                                                                let rx = mx, ry = my;
+
+                                                                                                                                                                                                                                                  if (matchMedia('(hover: hover)').matches) {
+                                                                                                                                                                                                                                                      document.addEventListener('mousemove', (e) => {
+                                                                                                                                                                                                                                                            mx = e.clientX; my = e.clientY;
+                                                                                                                                                                                                                                                                  dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+                                                                                                                                                                                                                                                                      });
+                                                                                                                                                                                                                                                                          const animate = () => {
+                rx += (mx - rx) * 0.35;
+                      ry += (my - ry) * 0.35;
+                                                                                                                                                                                                                                                                                            ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+                                                                                                                                                                                                                                                                                                  requestAnimationFrame(animate);
+                                                                                                                                                                                                                                                                                                      };
+                                                                                                                                                                                                                                                                                                          animate();
+
+                                                                                                                                                                                                                                                                                                              const hoverables = document.querySelectorAll('a, button, .proj, .contact__card, .tags li, .chip-btn, input');
+                                                                                                                                                                                                                                                                                                                  hoverables.forEach(el => {
+                                                                                                                                                                                                                                                                                                                        el.addEventListener('mouseenter', () => cursor.classList.add('is-hover'));
+                                                                                                                                                                                                                                                                                                                              el.addEventListener('mouseleave', () => cursor.classList.remove('is-hover'));
+                                                                                                                                                                                                                                                                                                                                  });
+                                                                                                                                                                                                                                                                                                                                      document.addEventListener('mousedown', () => cursor.classList.add('is-down'));
+                                                                                                                                                                                                                                                                                                                                          document.addEventListener('mouseup',   () => cursor.classList.remove('is-down'));
+                                                                                                                                                                                                                                                                                                                                            }
+
+                                                                                                                                                                                                                                                                                                                                              /* ---------- NAV ACTIVE STATE ---------- */
+                                                                                                                                                                                                                                                                                                                                                const navLinks = document.querySelectorAll('.topbar__nav a');
+                                                                                                                                                                                                                                                                                                                                                  const sections = [...navLinks].map(a => document.querySelector(a.getAttribute('href')));
+                                                                                                                                                                                                                                                                                                                                                    const setActive = () => {
+                                                                                                                                                                                                                                                                                                                                                        const y = window.scrollY + window.innerHeight * 0.3;
+                                                                                                                                                                                                                                                                                                                                                            let idx = 0;
+                                                                                                                                                                                                                                                                                                                                                                sections.forEach((s, i) => { if (s && s.offsetTop <= y) idx = i; });
+                                                                                                                                                                                                                                                                                                                                                                    navLinks.forEach(a => a.classList.remove('is-active'));
+                                                                                                                                                                                                                                                                                                                                                                        navLinks[idx]?.classList.add('is-active');
+                                                                                                                                                                                                                                                                                                                                                                          };
+                                                                                                                                                                                                                                                                                                                                                                            setActive();
+                                                                                                                                                                                                                                                                                                                                                                              window.addEventListener('scroll', setActive, { passive: true });
+
+                                                                                                                                                                                                                                                                                                                                                                                /* ---------- REVEAL ON SCROLL ---------- */
+                                                                                                                                                                                                                                                                                                                                                                                  const reveals = document.querySelectorAll('.section__head, .about__list li, .proj, .stack__group, .stack__featured, .contact__card, .term');
+                                                                                                                                                                                                                                                                                                                                                                                    reveals.forEach(el => el.classList.add('reveal'));
+
+                                                                                                                                                                                                                                                                                                                                                                                      const io = new IntersectionObserver((entries) => {
+                                                                                                                                                                                                                                                                                                                                                                                          entries.forEach((e, i) => {
+                                                                                                                                                                                                                                                                                                                                                                                                if (e.isIntersecting) {
+                                                                                                                                                                                                                                                                                                                                                                                                        const d = e.target.dataset.delay || 0;
+                                                                                                                                                                                                                                                                                                                                                                                                                setTimeout(() => e.target.classList.add('is-in'), d);
+                                                                                                                                                                                                                                                                                                                                                                                                                        io.unobserve(e.target);
+                                                                                                                                                                                                                                                                                                                                                                                                                              }
+                                                                                                                                                                                                                                                                                                                                                                                                                                  });
+                                                                                                                                                                                                                                                                                                                                                                                                                                    }, { threshold: 0.12 });
+                                                                                                                                                                                                                                                                                                                                                                                                                                      reveals.forEach(el => io.observe(el));
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                         /* ---------- GITHUB REPOS ---------- */
+                                                                                                                                                                                                                                                                                                                                                                                                                                           const workGrid = document.getElementById('workGrid');
+                                                                                                                                                                                                                                                                                                                                                                                                                                             const projCount = document.getElementById('projCount');
+                                                                                                                                                                                                                                                                                                                                                                                                                                               const filterBtns = document.querySelectorAll('.chip-btn');
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                 const langIcon = (lang) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                     const m = { Python: '🐍', JavaScript: '⚡', TypeScript: '📘', HTML: '🌐', CSS: '🎨', Shell: '🐚', Java: '☕', C: '⚙️', 'Jupyter Notebook': '📊' };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       return m[lang] || '📁';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                     };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   const langExt = (lang) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       const m = { Python: '.py', JavaScript: '.js', TypeScript: '.ts', HTML: '.html', CSS: '.css', Shell: '.sh', Java: '.java', C: '.c', 'Jupyter Notebook': '.ipynb' };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                         return m[lang] || '';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                     const mapCat = (repo) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                         const topics = (repo.topics || []).map(t => t.toLowerCase());
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           const lang = (repo.language || '').toLowerCase();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           if (topics.some(t => ['ml', 'ai', 'machine-learning', 'deep-learning', 'data-science', 'nlp', 'generative-ai'].includes(t)) || ['jupyter notebook'].includes(lang)) return 'ml';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           if (topics.some(t => ['cli', 'terminal', 'tui', 'tool'].includes(t)) || ['shell'].includes(lang)) return 'cli';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           if (topics.some(t => ['design', 'figma', 'ui', 'ux'].includes(t))) return 'design';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           return 'web';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                         };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                       const updateCount = (n) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           projCount.textContent = `// ${n} file${n === 1 ? '' : 's'}`;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                         const renderProjects = (repos) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                             workGrid.innerHTML = '';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                               repos.forEach(repo => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                   const cat = mapCat(repo);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                     const year = new Date(repo.updated_at).getFullYear();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                       const desc = repo.description || 'No description provided.';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                         const stack = [repo.language, ...(repo.topics || []).slice(0, 2)].filter(Boolean).join(' · ');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                           const article = document.createElement('article');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             article.className = 'proj reveal is-in';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                               article.dataset.cat = cat;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 article.innerHTML = `
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     <header class="proj__head">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         <span class="proj__icon">${langIcon(repo.language)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           <span class="proj__ext">${langExt(repo.language)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             <span class="proj__name">${escapeHtml(repo.name)}</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               </header>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 <h3>${escapeHtml(repo.name)}</h3>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   <p>${escapeHtml(desc)}</p>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     <ul class="proj__meta">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       <li><span>stack</span><b>${escapeHtml(stack)}</b></li>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         <li><span>year</span><b>${year}${repo.fork ? ' (fork)' : ''}</b></li>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           <li><span>type</span><b>${cat} · ${repo.fork ? 'fork' : repo.private ? 'private' : 'open source'}</b></li>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             </ul>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               <footer class="proj__foot">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 <a href="${repo.homepage || repo.html_url}" class="proj__link" target="_blank" rel="noopener">view <span>→</span></a>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   <a href="${repo.html_url}" class="proj__link proj__link--alt" target="_blank" rel="noopener">source <span>↗</span></a>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     </footer>`;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         workGrid.appendChild(article);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             updateCount(repos.length);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               setupFilters();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           const setupFilters = () => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                               const projs = workGrid.querySelectorAll('.proj');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                 filterBtns.forEach(btn => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                     btn.addEventListener('click', () => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                         filterBtns.forEach(b => { b.classList.remove('is-active'); b.setAttribute('aria-selected', 'false'); });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       btn.classList.add('is-active');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             btn.setAttribute('aria-selected', 'true');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   const f = btn.dataset.filter;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         let shown = 0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           projs.forEach(p => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               const match = (f === 'all') || (p.dataset.cat === f);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     p.classList.toggle('is-hidden', !match);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           if (match) shown++;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       updateCount(shown);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                               workGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--ink-mute);font-family:var(--mono);font-size:13px;padding:40px;">loading repos…</p>';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 fetch('https://api.github.com/users/agniveshtm/repos?per_page=100&sort=updated')
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .then(repos => renderProjects(repos.filter(r => !r.archived).slice(0, 12)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .catch(() => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           workGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--crimson);font-family:var(--mono);font-size:13px;padding:40px;">failed to load repos — <a href="https://github.com/agniveshtm" target="_blank" style="color:var(--amber);">view on github →</a></p>';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             updateCount(0);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     });
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              /* ---------- INTERACTIVE TERMINAL ---------- */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                const termBody  = document.getElementById('termBody');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  const termInput = document.getElementById('termInput');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    const termHint  = document.getElementById('termHint');
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      const HELP = [
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          '<span class="accent">Available commands</span>',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              '  <span class="mint">help</span>          show this list',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  '  <span class="mint">about</span>         who is this developer',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      '  <span class="mint">stack</span>         list primary tools',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          '  <span class="mint">projects</span>      open the work section',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              '  <span class="mint">github</span>        jump to github profile',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  '  <span class="mint">linkedin</span>      jump to linkedin',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      '  <span class="mint">email</span>         open mail client',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          '  <span class="mint">date</span>          print system date',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              '  <span class="mint">whoami</span>        who am i',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  '  <span class="mint">sudo</span>          try it',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      '  <span class="mint">clear</span>         clear the terminal',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          '  <span class="mint">banner</span>        print the banner',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ];
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              const BANNER = `<span class="accent">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ╔══════════════════════════════════════════╗
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ║  agnivesh manojkumar                      ║
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ║  developer · builder · curious            ║
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ║  "shipping with caffeine &amp; curiosity" ║
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ╚══════════════════════════════════════════╝</span>`;
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               const print = (html) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   const div = document.createElement('div');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       div.className = 'out';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           div.innerHTML = html;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               termBody.appendChild(div);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   termBody.scrollTop = termBody.scrollHeight;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       const echo = (cmd) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           const div = document.createElement('div');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               div.className = 'echo';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   div.innerHTML = `<span class="ps">agnivesh@portfolio:~$</span>${escapeHtml(cmd)}`;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       termBody.appendChild(div);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           const escapeHtml = (s) => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             const commands = {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 help: () => HELP.join('<br>'),
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     about: () => `Agnivesh Manojkumar — Developer &amp; Creator.<br>CS student · startup co-builder · curious human.<br>Type <span class="mint">stack</span> to see what I work with.`,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         stack: () => `<span class="accent">// primary</span><br>  django · python · javascript<br><span class="accent">// curious about</span><br>  generative ai · linux · kubernetes`,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             projects: () => { setTimeout(() => document.getElementById('work').scrollIntoView({ behavior: 'smooth' }), 100); return 'opening <span class="mint">~/projects</span>…'; },
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 github: () => { setTimeout(() => window.open('https://github.com/agniveshtm', '_blank'), 100); return 'redirecting → <span class="mint">github.com/agniveshtm</span>'; },
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     linkedin: () => { setTimeout(() => window.open('https://www.linkedin.com/in/agnivesh-manojkumar', '_blank'), 100); return 'redirecting → <span class="mint">linkedin.com/in/agnivesh-manojkumar</span>'; },
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         email: () => { setTimeout(() => window.location.href = 'mailto:hello@agnivesh.dev', 100); return 'opening mail client…'; },
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             date: () => new Date().toString(),
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 whoami: () => 'agnivesh',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     sudo: () => `<span class="err">[sudo]</span> password for guest: <br><span class="mint">Nice try. The root stays with the cat.</span>`,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         clear: () => { termBody.innerHTML = ''; return ''; },
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             banner: () => BANNER,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ls: () => `<span class="mint">about.md</span>  <span class="mint">projects/</span>  <span class="mint">stack.json</span>  <span class="mint">contact.txt</span>`,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     pwd: () => '/home/agnivesh/portfolio',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         echo: (args) => args.join(' '),
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           };
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             const intro = [
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 `<span class="accent">Tip:</span> try typing <span class="mint">help</span> or <span class="mint">banner</span>.`,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     `<span class="accent">Tip:</span> type <span class="mint">projects</span> to jump to the work section.`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ];
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         intro.forEach((m, i) => setTimeout(() => print(m), 1200 + i * 600));
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           const runCmd = (raw) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               const cmd = raw.trim();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   if (!cmd) return;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       echo(raw);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           const [name, ...args] = cmd.split(/\s+/);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               if (commands[name]) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     const out = commands[name](args);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           if (out) print(out);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               } else {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     print(`<span class="err">command not found:</span> ${escapeHtml(name)}<br>type <span class="mint">help</span> for a list.`);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           };
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             termInput.addEventListener('keydown', (e) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 if (e.key === 'Enter') {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       runCmd(termInput.value);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             termInput.value = '';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   });
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     document.getElementById('term').addEventListener('click', () => termInput.focus());
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       /* focus the terminal when tabbed into */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         termInput.addEventListener('focus', () => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             if (termHint) termHint.textContent = '// ready';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 termInput.addEventListener('blur', () => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     if (termHint) termHint.textContent = 'click to focus';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       });
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         /* ---------- subtle parallax for hero glow ---------- */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           const cross = document.querySelector('.hero__cross');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             if (cross && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 window.addEventListener('mousemove', (e) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       const x = (e.clientX / window.innerWidth - 0.5) * 20;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             const y = (e.clientY / window.innerHeight - 0.5) * 20;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   cross.style.transform = `translate(${x}px, ${y}px)`;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       }, { passive: true });
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         }
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           /* ---------- keyboard shortcuts ---------- */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             document.addEventListener('keydown', (e) => {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 if (e.target === termInput) return;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     if (e.key === '/') {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           e.preventDefault();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 termInput.focus();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         if (e.key === 'g') {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               termInput.focus();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     });
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     })();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
