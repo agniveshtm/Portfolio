@@ -1,11 +1,33 @@
 {
   "repos": [
     {
+      "name": "todo-tui",
+      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
+      "language": "Python",
+      "topics": [
+        "benchmark",
+        "pytest",
+        "python",
+        "textual",
+        "todo",
+        "todo-list",
+        "tui",
+        "tui-app",
+        "uv"
+      ],
+      "updatedAt": "2026-06-17T16:56:19Z",
+      "htmlUrl": "https://github.com/agniveshtm/todo-tui",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
       "name": "Portfolio",
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-06-17T15:28:40Z",
+      "updatedAt": "2026-06-17T16:49:10Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -21,28 +43,6 @@
       "htmlUrl": "https://github.com/agniveshtm/goml-py",
       "homepageUrl": "https://aswanidev-vs.github.io/goml/",
       "isFork": true,
-      "isPrivate": false,
-      "isArchived": false
-    },
-    {
-      "name": "todo-tui",
-      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
-      "language": "Python",
-      "topics": [
-        "benchmark",
-        "pytest",
-        "python",
-        "textual",
-        "todo",
-        "todo-list",
-        "tui",
-        "tui-app",
-        "uv"
-      ],
-      "updatedAt": "2026-06-13T16:15:02Z",
-      "htmlUrl": "https://github.com/agniveshtm/todo-tui",
-      "homepageUrl": "",
-      "isFork": false,
       "isPrivate": false,
       "isArchived": false
     },
@@ -158,7 +158,7 @@
       "isArchived": false
     }
   ],
-  "fetchedAt": "2026-06-17T15:46:50.318Z",
+  "fetchedAt": "2026-06-17T16:57:58Z",
   "source": "rest",
   "count": 12
 }
