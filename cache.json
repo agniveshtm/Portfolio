@@ -1,6 +1,18 @@
 {
   "repos": [
     {
+      "name": "Portfolio",
+      "description": "",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-06-18T20:22:39Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false
+    },
+    {
       "name": "todo-tui",
       "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
       "language": "Python",
@@ -18,18 +30,6 @@
       "updatedAt": "2026-06-18T18:48:32Z",
       "htmlUrl": "https://github.com/agniveshtm/todo-tui",
       "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false
-    },
-    {
-      "name": "Portfolio",
-      "description": "",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-06-18T17:56:56Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false
@@ -158,7 +158,7 @@
       "isArchived": false
     }
   ],
-  "fetchedAt": "2026-06-18T20:22:32Z",
+  "fetchedAt": "2026-06-18T22:52:42Z",
   "source": "rest",
   "count": 12
 }
