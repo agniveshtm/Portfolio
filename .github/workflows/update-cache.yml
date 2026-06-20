@@ -20,7 +20,17 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "User-Agent: portfolio-cache" > /tmp/repos.json
 
-          jq '{
+          echo '{}' > /tmp/tags.json
+          for name in $(jq -r '.[] | select(.archived == false) | .name' /tmp/repos.json); do
+            tag=$(curl -sf "https://api.github.com/repos/agniveshtm/$name/tags?per_page=1" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "User-Agent: portfolio-cache" \
+              | jq -r '.[0].name // ""')
+            jq --arg name "$name" --arg tag "$tag" '. + {($name): $tag}' /tmp/tags.json > /tmp/tags.new.json
+            mv /tmp/tags.new.json /tmp/tags.json
+          done
+
+          jq --slurpfile tags /tmp/tags.json '{
             repos: [.[] | select(.archived == false) | {
               name: .name,
               description: (.description // ""),
@@ -31,7 +41,8 @@ jobs:
               homepageUrl: (.homepage // ""),
               isFork: (.fork // false),
               isPrivate: (.private // false),
-              isArchived: (.archived // false)
+              isArchived: (.archived // false),
+              latestTag: ($tags[0][.name] // "")
             }],
             fetchedAt: (now | todate),
             source: "rest"
