@@ -5,7 +5,7 @@
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-06-19T22:47:26Z",
+      "updatedAt": "2026-06-20T04:35:06Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -28,13 +28,13 @@
         "tui-app",
         "uv"
       ],
-      "updatedAt": "2026-06-18T18:48:32Z",
+      "updatedAt": "2026-06-20T03:00:44Z",
       "htmlUrl": "https://github.com/agniveshtm/todo-tui",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
-      "latestTag": ""
+      "latestTag": "v0.4.0"
     },
     {
       "name": "goml-py",
@@ -166,10 +166,11 @@
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
-      "isArchived": false
+      "isArchived": false,
+      "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-20T00:03:02Z",
+  "fetchedAt": "2026-06-20T05:06:10Z",
   "source": "rest",
   "count": 12
 }
