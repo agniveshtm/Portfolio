@@ -5,9 +5,9 @@
       "description": "",
       "language": "JavaScript",
       "topics": [],
-      "updatedAt": "2026-06-21T11:16:50Z",
+      "updatedAt": "2026-06-21T13:29:15Z",
       "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
-      "homepageUrl": "https://agniveshtm.github.io/Ani-sync/",
+      "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
@@ -18,7 +18,7 @@
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-06-21T07:58:19Z",
+      "updatedAt": "2026-06-21T11:17:10Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -183,7 +183,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-21T11:17:06Z",
+  "fetchedAt": "2026-06-21T13:52:29Z",
   "source": "rest",
   "count": 13
 }
