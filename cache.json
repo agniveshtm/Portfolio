@@ -1,26 +1,26 @@
 {
   "repos": [
     {
-      "name": "Portfolio",
+      "name": "Ani-sync",
       "description": "",
-      "language": "CSS",
+      "language": "JavaScript",
       "topics": [],
-      "updatedAt": "2026-06-21T21:06:59Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "updatedAt": "2026-06-22T02:07:24Z",
+      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
+      "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
       "latestTag": ""
     },
     {
-      "name": "Ani-sync",
+      "name": "Portfolio",
       "description": "",
-      "language": "JavaScript",
+      "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-06-21T16:29:09Z",
-      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
-      "homepageUrl": "",
+      "updatedAt": "2026-06-21T23:04:03Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
@@ -183,7 +183,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-21T23:03:58Z",
+  "fetchedAt": "2026-06-22T02:59:33Z",
   "source": "rest",
   "count": 13
 }
