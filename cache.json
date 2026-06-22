@@ -1,11 +1,24 @@
 {
   "repos": [
     {
+      "name": "Anisync",
+      "description": "",
+      "language": "TypeScript",
+      "topics": [],
+      "updatedAt": "2026-06-22T18:59:25Z",
+      "htmlUrl": "https://github.com/agniveshtm/Anisync",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
+    },
+    {
       "name": "Portfolio",
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-06-22T09:15:04Z",
+      "updatedAt": "2026-06-22T15:15:30Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -183,7 +196,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-22T15:14:47Z",
+  "fetchedAt": "2026-06-22T19:19:34Z",
   "source": "rest",
-  "count": 13
+  "count": 14
 }
