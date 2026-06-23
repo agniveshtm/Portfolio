@@ -5,22 +5,9 @@
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-06-23T10:30:50Z",
+      "updatedAt": "2026-06-23T13:40:10Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
-    },
-    {
-      "name": "Anisync",
-      "description": "",
-      "language": "TypeScript",
-      "topics": [],
-      "updatedAt": "2026-06-23T02:10:22Z",
-      "htmlUrl": "https://github.com/agniveshtm/Anisync",
-      "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
@@ -183,7 +170,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-23T13:38:56Z",
+  "fetchedAt": "2026-06-23T16:23:19Z",
   "source": "rest",
-  "count": 13
+  "count": 12
 }
