@@ -1,6 +1,32 @@
 {
   "repos": [
     {
+      "name": "Ani-sync",
+      "description": "",
+      "language": "TypeScript",
+      "topics": [],
+      "updatedAt": "2026-06-24T02:58:19Z",
+      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": "v0.1.2"
+    },
+    {
+      "name": "Portfolio",
+      "description": "",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-06-24T02:35:11Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
+    },
+    {
       "name": "todo-tui",
       "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
       "language": "Python",
@@ -22,32 +48,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.4.0"
-    },
-    {
-      "name": "Ani-sync",
-      "description": "",
-      "language": "TypeScript",
-      "topics": [],
-      "updatedAt": "2026-06-24T01:52:39Z",
-      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v0.1.2"
-    },
-    {
-      "name": "Portfolio",
-      "description": "",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-06-23T23:01:58Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
     },
     {
       "name": "goml-py",
@@ -183,7 +183,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-24T02:35:07Z",
+  "fetchedAt": "2026-06-24T06:39:26Z",
   "source": "rest",
   "count": 13
 }
