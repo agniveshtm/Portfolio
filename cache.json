@@ -1,30 +1,30 @@
 {
   "repos": [
     {
-      "name": "Portfolio",
-      "description": "",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-06-25T21:24:44Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
-    },
-    {
       "name": "Ani-sync",
       "description": "",
       "language": "TypeScript",
       "topics": [],
-      "updatedAt": "2026-06-24T13:10:58Z",
+      "updatedAt": "2026-06-26T02:07:43Z",
       "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.1.1"
+    },
+    {
+      "name": "Portfolio",
+      "description": "",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-06-25T23:10:34Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
     },
     {
       "name": "todo-tui",
@@ -183,7 +183,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-25T23:10:30Z",
+  "fetchedAt": "2026-06-26T02:39:16Z",
   "source": "rest",
   "count": 13
 }
