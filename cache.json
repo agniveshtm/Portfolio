@@ -1,24 +1,40 @@
 {
   "repos": [
     {
+      "name": "agniveshtm",
+      "description": "Config files for my GitHub profile.",
+      "language": "",
+      "topics": [
+        "config",
+        "github-config"
+      ],
+      "updatedAt": "2026-06-26T05:29:20Z",
+      "htmlUrl": "https://github.com/agniveshtm/agniveshtm",
+      "homepageUrl": "https://github.com/agniveshtm",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
+    },
+    {
       "name": "Ani-sync",
       "description": "",
       "language": "TypeScript",
       "topics": [],
-      "updatedAt": "2026-06-26T02:07:43Z",
+      "updatedAt": "2026-06-26T04:20:28Z",
       "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
-      "latestTag": "v0.1.1"
+      "latestTag": "v0.1.2"
     },
     {
       "name": "Portfolio",
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-06-25T23:10:34Z",
+      "updatedAt": "2026-06-26T02:39:20Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -70,22 +86,6 @@
       "updatedAt": "2026-06-11T02:13:16Z",
       "htmlUrl": "https://github.com/agniveshtm/balance",
       "homepageUrl": "https://balance-nine-ruby.vercel.app",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
-    },
-    {
-      "name": "agniveshtm",
-      "description": "Config files for my GitHub profile.",
-      "language": "",
-      "topics": [
-        "config",
-        "github-config"
-      ],
-      "updatedAt": "2026-06-10T09:37:52Z",
-      "htmlUrl": "https://github.com/agniveshtm/agniveshtm",
-      "homepageUrl": "https://github.com/agniveshtm",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
@@ -183,7 +183,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-06-26T02:39:16Z",
+  "fetchedAt": "2026-06-26T06:47:29Z",
   "source": "rest",
   "count": 13
 }
