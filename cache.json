@@ -13,20 +13,20 @@
         "open-source",
         "vault"
       ],
-      "updatedAt": "2026-07-01T14:27:49Z",
+      "updatedAt": "2026-07-01T17:00:20Z",
       "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
-      "latestTag": "v1.0.0"
+      "latestTag": "v0.1.2"
     },
     {
       "name": "Portfolio",
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-07-01T12:28:35Z",
+      "updatedAt": "2026-07-01T15:36:07Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -191,7 +191,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-07-01T15:35:55Z",
+  "fetchedAt": "2026-07-01T17:47:52Z",
   "source": "rest",
   "count": 13
 }
