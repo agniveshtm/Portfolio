@@ -1,11 +1,32 @@
 {
   "repos": [
     {
+      "name": "Ani-sync",
+      "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes. This integration allows your media tracking data to appear seamlessly in Obsidian's graph view, creating visual connections between shows, manga, studios, staff, and tags.",
+      "language": "TypeScript",
+      "topics": [
+        "anilist",
+        "anilist-api",
+        "anime",
+        "manga",
+        "obsidian-plugin",
+        "open-source",
+        "vault"
+      ],
+      "updatedAt": "2026-07-05T16:27:20Z",
+      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": "v1.0.0"
+    },
+    {
       "name": "Portfolio",
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-07-05T13:15:06Z",
+      "updatedAt": "2026-07-05T15:07:49Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -35,27 +56,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.4.0"
-    },
-    {
-      "name": "Ani-sync",
-      "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes. This integration allows your media tracking data to appear seamlessly in Obsidian's graph view, creating visual connections between shows, manga, studios, staff, and tags.",
-      "language": "TypeScript",
-      "topics": [
-        "anilist",
-        "anilist-api",
-        "anime",
-        "manga",
-        "obsidian-plugin",
-        "open-source",
-        "vault"
-      ],
-      "updatedAt": "2026-07-05T07:43:23Z",
-      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v1.0.0"
     },
     {
       "name": "agniveshtm",
@@ -191,7 +191,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-07-05T15:07:45Z",
+  "fetchedAt": "2026-07-05T16:59:23Z",
   "source": "rest",
   "count": 13
 }
