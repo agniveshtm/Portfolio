@@ -1,17 +1,27 @@
 {
   "repos": [
     {
-      "name": "Portfolio",
-      "description": "",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-07-05T02:25:02Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "name": "todo-tui",
+      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
+      "language": "Python",
+      "topics": [
+        "benchmark",
+        "pytest",
+        "python",
+        "textual",
+        "todo",
+        "todo-list",
+        "tui",
+        "tui-app",
+        "uv"
+      ],
+      "updatedAt": "2026-07-05T08:53:04Z",
+      "htmlUrl": "https://github.com/agniveshtm/todo-tui",
+      "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
-      "latestTag": ""
+      "latestTag": "v0.4.0"
     },
     {
       "name": "Ani-sync",
@@ -26,13 +36,26 @@
         "open-source",
         "vault"
       ],
-      "updatedAt": "2026-07-01T17:00:20Z",
+      "updatedAt": "2026-07-05T07:43:23Z",
       "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
-      "latestTag": "v0.1.2"
+      "latestTag": "v1.0.0"
+    },
+    {
+      "name": "Portfolio",
+      "description": "",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-07-05T06:33:38Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
     },
     {
       "name": "agniveshtm",
@@ -49,29 +72,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": ""
-    },
-    {
-      "name": "todo-tui",
-      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
-      "language": "Python",
-      "topics": [
-        "benchmark",
-        "pytest",
-        "python",
-        "textual",
-        "todo",
-        "todo-list",
-        "tui",
-        "tui-app",
-        "uv"
-      ],
-      "updatedAt": "2026-06-24T02:29:49Z",
-      "htmlUrl": "https://github.com/agniveshtm/todo-tui",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v0.4.0"
     },
     {
       "name": "goml-py",
@@ -191,7 +191,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-07-05T06:33:34Z",
+  "fetchedAt": "2026-07-05T09:37:10Z",
   "source": "rest",
   "count": 13
 }
