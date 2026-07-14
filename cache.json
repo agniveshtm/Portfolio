@@ -1,6 +1,19 @@
 {
   "repos": [
     {
+      "name": "Portfolio",
+      "description": "",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-07-14T04:44:25Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
+    },
+    {
       "name": "Ani-sync",
       "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes. This integration allows your media tracking data to appear seamlessly in Obsidian's graph view, creating visual connections between shows, manga, studios, staff, and tags.",
       "language": "TypeScript",
@@ -20,19 +33,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v1.1.0"
-    },
-    {
-      "name": "Portfolio",
-      "description": "",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-07-14T01:48:19Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
     },
     {
       "name": "todo-tui",
@@ -191,7 +191,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-07-14T04:44:20Z",
+  "fetchedAt": "2026-07-14T07:05:41Z",
   "source": "rest",
   "count": 13
 }
