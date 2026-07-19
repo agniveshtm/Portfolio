@@ -1,11 +1,34 @@
 {
   "repos": [
     {
+      "name": "todo-tui",
+      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
+      "language": "Python",
+      "topics": [
+        "benchmark",
+        "pytest",
+        "python",
+        "textual",
+        "todo",
+        "todo-list",
+        "tui",
+        "tui-app",
+        "uv"
+      ],
+      "updatedAt": "2026-07-19T14:08:22Z",
+      "htmlUrl": "https://github.com/agniveshtm/todo-tui",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": "v0.4.0"
+    },
+    {
       "name": "Portfolio",
       "description": "",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-07-19T11:50:31Z",
+      "updatedAt": "2026-07-19T12:59:28Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -33,29 +56,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v1.1.0"
-    },
-    {
-      "name": "todo-tui",
-      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
-      "language": "Python",
-      "topics": [
-        "benchmark",
-        "pytest",
-        "python",
-        "textual",
-        "todo",
-        "todo-list",
-        "tui",
-        "tui-app",
-        "uv"
-      ],
-      "updatedAt": "2026-07-14T13:17:49Z",
-      "htmlUrl": "https://github.com/agniveshtm/todo-tui",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v0.4.0"
     },
     {
       "name": "agniveshtm",
@@ -191,7 +191,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-07-19T12:59:23Z",
+  "fetchedAt": "2026-07-19T14:24:40Z",
   "source": "rest",
   "count": 13
 }
