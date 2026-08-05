@@ -2,10 +2,10 @@
   "repos": [
     {
       "name": "Portfolio",
-      "description": "",
+      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-08-04T23:57:11Z",
+      "updatedAt": "2026-08-05T05:36:41Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -14,42 +14,8 @@
       "latestTag": ""
     },
     {
-      "name": "pkport",
-      "description": "pkport is a CLI tool that helps you discover and terminate development servers by scanning listening TCP ports, showing you the owning process names, and letting you kill them either via an interactive terminal picker or direct CLI flags.",
-      "language": "Python",
-      "topics": [],
-      "updatedAt": "2026-08-04T12:38:55Z",
-      "htmlUrl": "https://github.com/agniveshtm/pkport",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v0.2.0"
-    },
-    {
-      "name": "Ani-sync",
-      "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes. This integration allows your media tracking data to appear seamlessly in Obsidian's graph view, creating visual connections between shows, manga, studios, staff, and tags.",
-      "language": "TypeScript",
-      "topics": [
-        "anilist",
-        "anilist-api",
-        "anime",
-        "manga",
-        "obsidian-plugin",
-        "open-source",
-        "vault"
-      ],
-      "updatedAt": "2026-08-03T12:47:55Z",
-      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v1.1.0"
-    },
-    {
       "name": "todo-tui",
-      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal with a clean, dark-themed interface (you can actually change it in command palette), full keyboard navigation, and instant feedback.",
+      "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal.",
       "language": "Python",
       "topics": [
         "benchmark",
@@ -62,13 +28,47 @@
         "tui-app",
         "uv"
       ],
-      "updatedAt": "2026-07-27T10:36:48Z",
+      "updatedAt": "2026-08-05T02:44:56Z",
       "htmlUrl": "https://github.com/agniveshtm/todo-tui",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.5.0"
+    },
+    {
+      "name": "pkport",
+      "description": "pkport is a CLI tool that scans for active development servers, shows their process details, and lets you kill them instantly—via an interactive picker or CLI flags.",
+      "language": "Python",
+      "topics": [],
+      "updatedAt": "2026-08-05T02:34:45Z",
+      "htmlUrl": "https://github.com/agniveshtm/pkport",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": "v0.2.0"
+    },
+    {
+      "name": "Ani-sync",
+      "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes.",
+      "language": "TypeScript",
+      "topics": [
+        "anilist",
+        "anilist-api",
+        "anime",
+        "manga",
+        "obsidian-plugin",
+        "open-source",
+        "vault"
+      ],
+      "updatedAt": "2026-08-05T02:30:54Z",
+      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": "v1.1.0"
     },
     {
       "name": "agniveshtm",
@@ -204,7 +204,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-08-05T02:14:48Z",
+  "fetchedAt": "2026-08-05T05:38:39Z",
   "source": "rest",
   "count": 14
 }
