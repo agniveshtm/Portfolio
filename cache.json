@@ -1,11 +1,32 @@
 {
   "repos": [
     {
+      "name": "Ani-sync",
+      "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes.",
+      "language": "TypeScript",
+      "topics": [
+        "anilist",
+        "anilist-api",
+        "anime",
+        "manga",
+        "obsidian-plugin",
+        "open-source",
+        "vault"
+      ],
+      "updatedAt": "2026-08-17T12:51:43Z",
+      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
+      "homepageUrl": "",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": "v1.1.0"
+    },
+    {
       "name": "Portfolio",
       "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-08-17T11:19:19Z",
+      "updatedAt": "2026-08-17T12:29:00Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -48,27 +69,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.5.0"
-    },
-    {
-      "name": "Ani-sync",
-      "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes.",
-      "language": "TypeScript",
-      "topics": [
-        "anilist",
-        "anilist-api",
-        "anime",
-        "manga",
-        "obsidian-plugin",
-        "open-source",
-        "vault"
-      ],
-      "updatedAt": "2026-08-05T02:30:54Z",
-      "htmlUrl": "https://github.com/agniveshtm/Ani-sync",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v1.1.0"
     },
     {
       "name": "agniveshtm",
@@ -204,7 +204,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-08-17T12:27:23Z",
+  "fetchedAt": "2026-08-17T13:33:33Z",
   "source": "rest",
   "count": 14
 }
