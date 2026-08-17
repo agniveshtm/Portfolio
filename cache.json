@@ -1,6 +1,19 @@
 {
   "repos": [
     {
+      "name": "Portfolio",
+      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-08-17T13:36:54Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
+    },
+    {
       "name": "Ani-sync",
       "description": "Ani-sync is an Obsidian plugin that automatically syncs your AniList anime and manga lists directly into your Obsidian vault as wikilinked Markdown notes.",
       "language": "TypeScript",
@@ -20,19 +33,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v1.1.0"
-    },
-    {
-      "name": "Portfolio",
-      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-08-17T12:29:00Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
     },
     {
       "name": "pkport",
@@ -204,7 +204,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-08-17T13:33:33Z",
+  "fetchedAt": "2026-08-17T14:21:14Z",
   "source": "rest",
   "count": 14
 }
