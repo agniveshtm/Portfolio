@@ -1,24 +1,11 @@
 {
   "repos": [
     {
-      "name": "flux",
-      "description": "",
-      "language": "Python",
-      "topics": [],
-      "updatedAt": "2026-09-10T02:22:14Z",
-      "htmlUrl": "https://github.com/agniveshtm/flux",
-      "homepageUrl": "",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
-    },
-    {
       "name": "Portfolio",
       "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-09-09T23:43:19Z",
+      "updatedAt": "2026-09-10T02:24:36Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -217,7 +204,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-09-10T02:24:31Z",
+  "fetchedAt": "2026-09-10T07:42:24Z",
   "source": "rest",
-  "count": 15
+  "count": 14
 }
