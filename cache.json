@@ -5,20 +5,20 @@
       "description": "",
       "language": "JavaScript",
       "topics": [],
-      "updatedAt": "2026-09-25T17:24:37Z",
+      "updatedAt": "2026-09-25T18:40:13Z",
       "htmlUrl": "https://github.com/agniveshtm/flux",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
-      "latestTag": ""
+      "latestTag": "v0.1.0"
     },
     {
       "name": "Portfolio",
       "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-09-25T12:28:51Z",
+      "updatedAt": "2026-09-25T17:40:35Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -217,7 +217,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-09-25T17:40:28Z",
+  "fetchedAt": "2026-09-25T20:56:05Z",
   "source": "rest",
   "count": 15
 }
