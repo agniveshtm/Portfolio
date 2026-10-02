@@ -3,7 +3,7 @@
     {
       "name": "flux",
       "description": "Flux — an offline-first desktop image converter (JPG/PNG/WebP) built with Python + pywebview and Vue 3, packaged as a Windows installer with in-app auto-updates.",
-      "language": "JavaScript",
+      "language": "Python",
       "topics": [
         "image-converter",
         "inno-setup",
@@ -15,20 +15,20 @@
         "tailwindcss",
         "vue3"
       ],
-      "updatedAt": "2026-10-02T02:21:01Z",
+      "updatedAt": "2026-10-02T12:22:41Z",
       "htmlUrl": "https://github.com/agniveshtm/flux",
       "homepageUrl": "",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
-      "latestTag": "v0.1.0"
+      "latestTag": "v0.2.0"
     },
     {
       "name": "Portfolio",
       "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-10-02T00:22:44Z",
+      "updatedAt": "2026-10-02T06:30:13Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -227,7 +227,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-10-02T06:30:08Z",
+  "fetchedAt": "2026-10-02T13:23:55Z",
   "source": "rest",
   "count": 15
 }
