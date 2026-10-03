@@ -1,6 +1,19 @@
 {
   "repos": [
     {
+      "name": "Portfolio",
+      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-10-03T07:22:40Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
+    },
+    {
       "name": "flux",
       "description": "Flux — an offline-first desktop image converter (JPG/PNG/WebP) built with Python + pywebview and Vue 3, packaged as a Windows installer with in-app auto-updates.",
       "language": "Python",
@@ -22,19 +35,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.2.0"
-    },
-    {
-      "name": "Portfolio",
-      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-10-03T01:35:56Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
     },
     {
       "name": "balance",
@@ -227,7 +227,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-10-03T07:22:36Z",
+  "fetchedAt": "2026-10-03T12:54:05Z",
   "source": "rest",
   "count": 15
 }
