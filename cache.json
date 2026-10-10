@@ -15,7 +15,7 @@
         "tailwindcss",
         "vue3"
       ],
-      "updatedAt": "2026-10-10T06:02:37Z",
+      "updatedAt": "2026-10-10T12:43:20Z",
       "htmlUrl": "https://github.com/agniveshtm/flux",
       "homepageUrl": "https://agniveshtm.github.io/flux/",
       "isFork": false,
@@ -28,7 +28,7 @@
       "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-10-10T03:39:38Z",
+      "updatedAt": "2026-10-10T10:19:36Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -227,7 +227,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-10-10T10:19:31Z",
+  "fetchedAt": "2026-10-10T16:03:27Z",
   "source": "rest",
   "count": 15
 }
