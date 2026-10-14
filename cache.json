@@ -5,7 +5,7 @@
       "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-10-13T16:37:53Z",
+      "updatedAt": "2026-10-13T21:40:19Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -227,7 +227,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-10-13T21:40:13Z",
+  "fetchedAt": "2026-10-14T00:46:46Z",
   "source": "rest",
   "count": 15
 }
