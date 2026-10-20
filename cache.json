@@ -1,6 +1,19 @@
 {
   "repos": [
     {
+      "name": "Portfolio",
+      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-10-20T17:40:15Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
+    },
+    {
       "name": "todo-tui",
       "description": "TODO-TUI is a feature-rich, keyboard-driven Terminal User Interface (TUI) todo application built with Python and Textual. Manage your tasks directly from the terminal.",
       "language": "Python",
@@ -45,19 +58,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.3.0"
-    },
-    {
-      "name": "Portfolio",
-      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-10-20T12:30:10Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
     },
     {
       "name": "balance",
@@ -227,7 +227,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-10-20T17:40:10Z",
+  "fetchedAt": "2026-10-20T21:04:12Z",
   "source": "rest",
   "count": 15
 }
