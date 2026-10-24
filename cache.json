@@ -1,11 +1,34 @@
 {
   "repos": [
     {
+      "name": "flux",
+      "description": "Flux — an offline-first desktop image converter (JPG/PNG/WebP) built with Python + pywebview and Vue 3, packaged as a Windows installer with in-app auto-updates.",
+      "language": "JavaScript",
+      "topics": [
+        "image-converter",
+        "inno-setup",
+        "offline-first",
+        "pillow",
+        "pyinstaller",
+        "python",
+        "pywebview",
+        "tailwindcss",
+        "vue3"
+      ],
+      "updatedAt": "2026-10-24T02:33:58Z",
+      "htmlUrl": "https://github.com/agniveshtm/flux",
+      "homepageUrl": "https://agniveshtm.github.io/flux/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": "v0.3.0"
+    },
+    {
       "name": "Portfolio",
       "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
       "language": "CSS",
       "topics": [],
-      "updatedAt": "2026-10-23T22:47:11Z",
+      "updatedAt": "2026-10-24T01:17:01Z",
       "htmlUrl": "https://github.com/agniveshtm/Portfolio",
       "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
       "isFork": false,
@@ -35,29 +58,6 @@
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.5.0"
-    },
-    {
-      "name": "flux",
-      "description": "Flux — an offline-first desktop image converter (JPG/PNG/WebP) built with Python + pywebview and Vue 3, packaged as a Windows installer with in-app auto-updates.",
-      "language": "Python",
-      "topics": [
-        "image-converter",
-        "inno-setup",
-        "offline-first",
-        "pillow",
-        "pyinstaller",
-        "python",
-        "pywebview",
-        "tailwindcss",
-        "vue3"
-      ],
-      "updatedAt": "2026-10-22T15:19:55Z",
-      "htmlUrl": "https://github.com/agniveshtm/flux",
-      "homepageUrl": "https://agniveshtm.github.io/flux/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": "v0.3.0"
     },
     {
       "name": "balance",
@@ -227,7 +227,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-10-24T01:16:56Z",
+  "fetchedAt": "2026-10-24T06:43:23Z",
   "source": "rest",
   "count": 15
 }
