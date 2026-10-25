@@ -1,22 +1,9 @@
 {
   "repos": [
     {
-      "name": "Portfolio",
-      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
-      "language": "CSS",
-      "topics": [],
-      "updatedAt": "2026-10-25T07:58:22Z",
-      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
-      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
-    },
-    {
       "name": "flux",
       "description": "Flux — an offline-first desktop image converter (JPG/PNG/WebP) built with Python + pywebview and Vue 3, packaged as a Windows installer with in-app auto-updates.",
-      "language": "JavaScript",
+      "language": "Python",
       "topics": [
         "image-converter",
         "inno-setup",
@@ -28,13 +15,26 @@
         "tailwindcss",
         "vue3"
       ],
-      "updatedAt": "2026-10-24T02:33:58Z",
+      "updatedAt": "2026-10-25T13:28:47Z",
       "htmlUrl": "https://github.com/agniveshtm/flux",
       "homepageUrl": "https://agniveshtm.github.io/flux/",
       "isFork": false,
       "isPrivate": false,
       "isArchived": false,
       "latestTag": "v0.3.0"
+    },
+    {
+      "name": "Portfolio",
+      "description": "A personal portfolio website showcasing projects and skills, built with HTML and CSS.",
+      "language": "CSS",
+      "topics": [],
+      "updatedAt": "2026-10-25T12:59:49Z",
+      "htmlUrl": "https://github.com/agniveshtm/Portfolio",
+      "homepageUrl": "https://agniveshtm.github.io/Portfolio/",
+      "isFork": false,
+      "isPrivate": false,
+      "isArchived": false,
+      "latestTag": ""
     },
     {
       "name": "todo-tui",
@@ -227,7 +227,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-10-25T12:59:45Z",
+  "fetchedAt": "2026-10-25T16:59:44Z",
   "source": "rest",
   "count": 15
 }
