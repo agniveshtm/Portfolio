@@ -73,19 +73,6 @@
       "latestTag": "v0.3.0"
     },
     {
-      "name": "balance",
-      "description": "",
-      "language": "TypeScript",
-      "topics": [],
-      "updatedAt": "2026-09-09T01:44:36Z",
-      "htmlUrl": "https://github.com/agniveshtm/balance",
-      "homepageUrl": "https://balance-nine-ruby.vercel.app",
-      "isFork": false,
-      "isPrivate": false,
-      "isArchived": false,
-      "latestTag": ""
-    },
-    {
       "name": "agniveshtm",
       "description": "Config files for my GitHub profile.",
       "language": "",
@@ -227,7 +214,7 @@
       "latestTag": ""
     }
   ],
-  "fetchedAt": "2026-11-15T15:58:51Z",
+  "fetchedAt": "2026-11-15T20:52:41Z",
   "source": "rest",
-  "count": 15
+  "count": 14
 }
